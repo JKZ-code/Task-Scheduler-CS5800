@@ -2,13 +2,12 @@ package com.group12.taskscheduler.models;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.time.temporal.ChronoUnit;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.HashSet;
 
-@Entity  // Marks this class as a database entity
-@Table(name = "tasks")  // Specifies the table name in MySQL
+@Entity // Marks this class as a database entity
+@Table(name = "tasks") // Specifies the table name in MySQL
 public class Task {
 
     @Id
@@ -31,18 +30,17 @@ public class Task {
     private int estimatedDuration;
 
     // Dependencies stored as a comma-separated string of task IDs
-    private String dependenciesStr;
+    @Column(name = "dependencies")
+    @ElementCollection
+    private Set<Long> dependenciesSet = new HashSet<>();
 
     // Transient fields used by the algorithm (not persisted)
     @Transient
-    private List<Long> dependencies;
-    
-    @Transient
     private int earliestStartTime;
-    
+
     @Transient
     private int endTime;
-    
+
     @Transient
     private boolean valid;
 
@@ -51,97 +49,82 @@ public class Task {
 
     // Constructors
     public Task() {
-        this.dependencies = new ArrayList<>();
         this.valid = true;
     }
 
-    public Task(String name, int weight, LocalDate dueDate, int estimatedDuration, String dependenciesStr) {
+    public Task(String name, int weight, LocalDate dueDate, int estimatedDuration) {
         this.name = name;
         this.weight = weight;
         this.dueDate = dueDate;
         this.estimatedDuration = estimatedDuration;
-        this.dependenciesStr = dependenciesStr;
-        this.dependencies = new ArrayList<>();
         this.valid = true;
-        
-        // Parse dependencies if provided
-        if (dependenciesStr != null && !dependenciesStr.isEmpty()) {
-            parseDependencies();
-        }
-    }
-
-    // Parse dependencies from string to List<Long>
-    public void parseDependencies() {
-        dependencies = new ArrayList<>();
-        if (dependenciesStr != null && !dependenciesStr.isEmpty()) {
-            String[] deps = dependenciesStr.split(",");
-            for (String dep : deps) {
-                try {
-                    dependencies.add(Long.parseLong(dep.trim()));
-                } catch (NumberFormatException e) {
-                    // Skip invalid dependency
-                }
-            }
-        }
-    }
-
-    // Convert dependencies list back to string
-    public void convertDependenciesToString() {
-        if (dependencies != null && !dependencies.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            for (Long dep : dependencies) {
-                if (sb.length() > 0) {
-                    sb.append(",");
-                }
-                sb.append(dep);
-            }
-            this.dependenciesStr = sb.toString();
-        } else {
-            this.dependenciesStr = "";
-        }
+        this.dependenciesSet = new HashSet<>(); // Initialize empty dependency set
     }
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public int getWeight() { return weight; }
-    public void setWeight(int weight) { this.weight = weight; }
-
-    public LocalDate getDueDate() { return dueDate; }
-    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
-
-    public int getEstimatedDuration() { return estimatedDuration; }
-    public void setEstimatedDuration(int estimatedDuration) { this.estimatedDuration = estimatedDuration; }
-
-    public String getDependenciesStr() { return dependenciesStr; }
-    public void setDependenciesStr(String dependenciesStr) { 
-        this.dependenciesStr = dependenciesStr;
-        parseDependencies();
+    public Long getId() {
+        return id;
     }
 
-    public List<Long> getDependencies() { 
-        if (dependencies == null || dependencies.isEmpty()) {
-            parseDependencies();
-        }
-        return dependencies; 
-    }
-    public void setDependencies(List<Long> dependencies) { 
-        this.dependencies = dependencies;
-        convertDependenciesToString();
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public int getEarliestStartTime() { return earliestStartTime; }
-    public void setEarliestStartTime(int earliestStartTime) { this.earliestStartTime = earliestStartTime; }
+    public String getName() {
+        return name;
+    }
 
-    public int getEndTime() { return endTime; }
-    public void setEndTime(int endTime) { this.endTime = endTime; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public boolean isValid() { return valid; }
-    public void setValid(boolean valid) { this.valid = valid; }
+    public int getWeight() {
+        return weight;
+    }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public int getEstimatedDuration() {
+        return estimatedDuration;
+    }
+
+    public void setEstimatedDuration(int estimatedDuration) {
+        this.estimatedDuration = estimatedDuration;
+    }
+
+    public int getEarliestStartTime() {
+        return earliestStartTime;
+    }
+
+    public void setEarliestStartTime(int earliestStartTime) {
+        this.earliestStartTime = earliestStartTime;
+    }
+
+    public int getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(int endTime) {
+        this.endTime = endTime;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
 
     /**
      * Calculates the deadline as hours from now to the due date
@@ -152,17 +135,17 @@ public class Task {
         if (deadlineOverride != null) {
             return deadlineOverride;
         }
-        
+
         // Calculate hours from now to the due date
         if (dueDate == null) {
             return Integer.MAX_VALUE; // No deadline
         }
-        
+
         LocalDate today = LocalDate.now();
         long daysBetween = ChronoUnit.DAYS.between(today, dueDate);
-        
+
         // Convert days to hours (24 hours per day)
-        return (int)(daysBetween * 24);
+        return (int) (daysBetween * 24);
     }
 
     /**
@@ -172,16 +155,25 @@ public class Task {
         this.deadlineOverride = hours;
     }
 
-    /**
-     * Returns the dependencies as a comma-separated string
-     */
-    public String getDependenciesString() {
-        if (dependencies == null || dependencies.isEmpty()) {
-            return "";
+    public Set<Long> getDependenciesSet() {
+        return dependenciesSet;
+    }
+
+    public void setDependenciesSet(Set<Long> dependenciesSet) {
+        this.dependenciesSet = dependenciesSet;
+    }
+
+    public void addDependency(Long taskId) {
+        if (this.dependenciesSet == null) {
+            this.dependenciesSet = new HashSet<>();
         }
-        return dependencies.stream()
-                .map(String::valueOf)
-                .collect(Collectors.joining(","));
+        this.dependenciesSet.add(taskId);
+    }
+
+    public void removeDependency(Long taskId) {
+        if (this.dependenciesSet != null) {
+            this.dependenciesSet.remove(taskId);
+        }
     }
 
     // Helper method for the scheduler
@@ -193,7 +185,7 @@ public class Task {
                 ", weight=" + weight +
                 ", dueDate=" + dueDate +
                 ", estimatedDuration=" + estimatedDuration +
-                ", dependencies=" + dependencies +
+                ", dependencies=" + dependenciesSet +
                 '}';
     }
 }
