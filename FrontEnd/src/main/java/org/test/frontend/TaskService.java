@@ -25,6 +25,8 @@ public class TaskService {
 
     public TaskResponse createTask(Task task) throws IOException, InterruptedException {
         String requestBody = objectMapper.writeValueAsString(task);
+        //System.out.println("Request JSON Body:\n" + requestBody);
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(API_URL))
                 .header("Content-Type", "application/json")

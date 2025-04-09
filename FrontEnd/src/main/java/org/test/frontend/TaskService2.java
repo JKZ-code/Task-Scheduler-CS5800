@@ -6,7 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import okhttp3.*;
 
 import java.io.IOException;
-import java.net.http.HttpClient;
 
 public class TaskService2 {
     private static final MediaType JSON = MediaType.get("application/json");
@@ -32,7 +31,7 @@ public class TaskService2 {
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 System.err.println("HTTP error code: " + response.code());
-                System.err.println("Response body: " + response); // <-- log this
+                System.err.println("Response body: " + response);
                 throw new IOException("Unexpected code " + response);
             }
             String responseBody = response.body().string();
