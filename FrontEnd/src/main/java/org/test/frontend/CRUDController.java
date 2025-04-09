@@ -86,7 +86,6 @@ public class CRUDController implements Initializable {
 
 
     private TaskService taskService = new TaskService();
-    private TaskService2 taskService2 = new TaskService2();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {

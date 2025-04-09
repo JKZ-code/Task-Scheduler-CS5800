@@ -1,7 +1,6 @@
 package org.test.frontend;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 public class TaskResponse {
     private Long id;
