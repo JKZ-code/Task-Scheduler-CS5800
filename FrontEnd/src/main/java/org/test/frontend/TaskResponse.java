@@ -5,7 +5,7 @@ import java.util.Set;
 
 public class TaskResponse {
     private Long id;
-    private String task;
+    private String name;
     private int weight;
     private LocalDate dueDate;
     private int estimatedDuration;
@@ -13,19 +13,21 @@ public class TaskResponse {
 
     public TaskResponse(Long id, String task, int weight, LocalDate dueDate, int estimatedDuration, String dependenciesStr) {
         this.id = id;
-        this.task = task;
+        this.name = task;
         this.weight = weight;
         this.dueDate = dueDate;
         this.estimatedDuration = estimatedDuration;
         this.dependenciesStr = dependenciesStr;
     }
 
+    public TaskResponse() {}
+
     public Long getId() {
         return id;
     }
 
-    public String getTask() {
-        return task;
+    public String getName() {
+        return name;
     }
 
     public int getWeight() {
@@ -42,5 +44,29 @@ public class TaskResponse {
 
     public String getDependenciesStr() {
         return dependenciesStr;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public void setEstimatedDuration(int estimatedDuration) {
+        this.estimatedDuration = estimatedDuration;
+    }
+
+    public void setDependenciesStr(String dependenciesStr) {
+        this.dependenciesStr = dependenciesStr;
     }
 }

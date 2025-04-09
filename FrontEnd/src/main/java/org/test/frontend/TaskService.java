@@ -12,7 +12,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class TaskService {
-    private static final String API_URL = "http://localhost:8080/api/tasks";
+    private static final String API_URL = "http://localhost:8081/api/tasks";
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
@@ -28,6 +28,7 @@ public class TaskService {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(API_URL))
                 .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());

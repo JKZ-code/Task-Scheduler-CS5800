@@ -4,6 +4,7 @@ module org.test.frontend {
     requires com.fasterxml.jackson.databind;
     requires java.net.http;
     requires com.fasterxml.jackson.datatype.jsr310;
+    requires okhttp3;
 
 
     opens org.test.frontend to javafx.fxml;

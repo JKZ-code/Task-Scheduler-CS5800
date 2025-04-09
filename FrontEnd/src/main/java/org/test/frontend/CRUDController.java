@@ -86,7 +86,7 @@ public class CRUDController implements Initializable {
 
 
     private TaskService taskService = new TaskService();
-
+    private TaskService2 taskService2 = new TaskService2();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -101,7 +101,7 @@ public class CRUDController implements Initializable {
         col_dependencies.setCellValueFactory(new PropertyValueFactory<>("dependencies"));
 
         tableView.setItems(taskDisplayList);
-        addBtn.setOnAction(event ->addNewRow());
+        addBtn.setOnAction(event ->addTask());
 
     }
 
@@ -240,12 +240,38 @@ public class CRUDController implements Initializable {
                     dueDateVal,
                     ids
             );
-            // add logic to call backend interface
-            TaskResponse returnedTask = taskService.createTask(curTask);
+
+            //TaskResponse returnedTask = taskService.createTask(curTask);
+            TaskResponse returnedTask = taskService2.post(curTask);
             int taskNumber = numberToTask.size() + 1;
             numberToTask.put(taskNumber, returnedTask);
             taskDisplayList.add(new TaskDisplay(taskNumber, curTask, numbers));
             showAlert("Task successfully added!");
+
+            task.clear();
+            weight.clear();
+            estimatedduration.clear();
+            duedate.setValue(null);
+            ObservableList<Node> children = multiInputContainer.getChildren();
+
+            // Remove all HBoxes except the first one
+            for (int i = 1; i < children.size(); i++) {
+                if (children.get(i) instanceof HBox) {
+                    children.remove(i);
+                    i--; // Adjust index after removal
+                }
+            }
+
+            // Clear the TextField in the first (or remaining) HBox
+            if (!children.isEmpty()) {
+                HBox remainingHBox = (HBox) children.get(0); // Get the first HBox
+                for (Node node : remainingHBox.getChildren()) {
+                    if (node instanceof TextField) {
+                        TextField textField = (TextField) node;
+                        textField.clear(); // Clear the text in the TextField
+                    }
+                }
+            }
 
         } catch (Exception e) {
             showAlert("Failed to submit task: " + e.getMessage());
