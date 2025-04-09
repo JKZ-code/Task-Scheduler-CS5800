@@ -1,39 +1,39 @@
 package org.test.frontend;
 
-public class Task {
-    private String task;
-    private String priority;
-    private String estimatedDuration;
-    private String dueDate;
-    private String dependencies;
+import java.time.LocalDate;
 
-    public Task(String task, String priority, String estimatedDuration, String dueDate, String dependencies) {
-        this.task = task;
-        this.priority = priority;
+public class Task {
+    private String name;
+    private int weight;
+    private LocalDate dueDate;
+    private int estimatedDuration;
+    private String dependenciesStr;
+
+    public Task(String task, int weight, int estimatedDuration, LocalDate dueDate, String dependencies) {
+        this.name = task;
+        this.weight = weight;
         this.estimatedDuration = estimatedDuration;
         this.dueDate = dueDate;
-        this.dependencies = dependencies;
+        this.dependenciesStr = dependencies;
     }
 
-    public Task(){}
-
-    public String getTask() {
-        return task;
+    public String getName() {
+        return name;
     }
 
-    public String getPriority() {
-        return priority;
+    public int getWeight() {
+        return weight;
     }
 
-    public String getEstimatedDuration() {
+    public int getEstimatedDuration() {
         return estimatedDuration;
     }
 
-    public String getDueDate() {
+    public LocalDate getDueDate() {
         return dueDate;
     }
 
-    public String getDependencies() {
-        return dependencies;
+    public String getDependenciesStr() {
+        return dependenciesStr;
     }
 }

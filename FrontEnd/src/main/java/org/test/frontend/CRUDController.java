@@ -4,13 +4,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.time.LocalDate;
+import java.util.*;
 
 public class CRUDController implements Initializable {
 
@@ -39,16 +42,13 @@ public class CRUDController implements Initializable {
     private Button deleteBtn;
 
     @FXML
-    private TextField dependencies;
-
-    @FXML
-    private TextField duedate;
+    private DatePicker duedate;
 
     @FXML
     private TextField estimatedduration;
 
     @FXML
-    private TextField priority;
+    private TextField weight;
 
     @FXML
     private Button scheduleBtn;
@@ -62,49 +62,190 @@ public class CRUDController implements Initializable {
     @FXML
     private TableView<TaskDisplay> tableView;
 
-    private TaskService taskService = new TaskService();
-    private Map<Integer, Task> taskMap = new HashMap<>();
+    @FXML
+    private VBox multiInputContainer;
+
+    @FXML
+    private TextField firstD;
+
+    @FXML
+    private HBox initialHBox;
+
+    @FXML
+    private Button addD;
+
+
+    private List<HBox> additionalFields = new ArrayList<>();
+    private static final int MAX_FIELDS = 3;
+
+    private String numbers;
+    private String ids;
+    private Map<Integer, TaskResponse> numberToTask = new HashMap<>();
     private ObservableList<TaskDisplay> taskDisplayList = FXCollections.observableArrayList();
+
+
+
+    private TaskService taskService = new TaskService();
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        //button to rows for dependencies input
+        addD.setOnAction(event -> addNewRow());
+
         col_number.setCellValueFactory(new PropertyValueFactory<>("number"));
-        col_task.setCellValueFactory(new PropertyValueFactory<>("task"));
-        col_priority.setCellValueFactory(new PropertyValueFactory<>("priority"));
+        col_task.setCellValueFactory(new PropertyValueFactory<>("name"));
+        col_priority.setCellValueFactory(new PropertyValueFactory<>("weight"));
         col_estimatedduration.setCellValueFactory(new PropertyValueFactory<>("estimatedDuration"));
         col_duedate.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
         col_dependencies.setCellValueFactory(new PropertyValueFactory<>("dependencies"));
 
         tableView.setItems(taskDisplayList);
-        addBtn.setOnAction(event ->addTask());
+        addBtn.setOnAction(event ->addNewRow());
 
     }
 
+
+    /**
+     * Add a new row to input dependencies, maximum dependencies number is 3
+     */
+    private void addNewRow(){
+        if (multiInputContainer.getChildren().size() < MAX_FIELDS) {
+            HBox newRow = createNewRow();
+            multiInputContainer.getChildren().add(newRow);
+            additionalFields.add(newRow);
+
+            if (multiInputContainer.getChildren().size() >= MAX_FIELDS) {
+                addD.setDisable(true);
+            }
+        }
+    }
+
+    private HBox createNewRow(){
+        HBox row = new HBox(5);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle("-fx-pref-width: 150; -fx-pref-height: 37;");
+        TextField nextD = new TextField();
+        nextD.setStyle("-fx-pref-width: 84; -fx-pref-height: 35;");
+        Button addD = new Button("+");
+        addD.setStyle("-fx-background-color: linear-gradient(to bottom right, #9e20a0, #5a3375);\n" +
+                "    -fx-text-fill: #fff;\n" +
+                "    -fx-font-size: 14px;\n" +
+                "    -fx-cursor: hand;" +
+                "   -fx-pref-width: 37; " +
+                "   -fx-pref-height: 35;");
+        Button removeD = new Button("-");
+        removeD.setStyle("-fx-background-color: linear-gradient(to bottom right, #9e20a0, #5a3375);\n" +
+                "    -fx-text-fill: #fff;\n" +
+                "    -fx-font-size: 14px;\n" +
+                "    -fx-cursor: hand; " +
+                "   -fx-pref-width: 37;" +
+                "   -fx-pref-height: 35;");
+        addD.setOnAction(event -> addNewRow());
+        removeD.setOnAction(event -> removeRow(row));
+        row.getChildren().addAll(nextD, addD, removeD);
+        return row;
+    }
+
+    /**
+     * the second and third row can be removed
+     * @param row
+     */
+    private void removeRow(HBox row){
+        multiInputContainer.getChildren().remove(row);
+        additionalFields.remove(row);
+        if (multiInputContainer.getChildren().size() < MAX_FIELDS) {
+            addD.setDisable(false);
+        }
+    }
+
+    /**
+     *
+     * numbers: String of task no. in current list (separated by ',');
+     * ids: String of task id returned from backend (separated by ',')
+     */
+    private void getAllValues(){
+        StringBuilder numbers = new StringBuilder();
+        StringBuilder ids = new StringBuilder();
+        for (Node node : multiInputContainer.getChildren()) {
+            if (node instanceof HBox) {
+                HBox row = (HBox) node;
+                for (Node component : row.getChildren()) {
+                    if (component instanceof TextField) {
+                        TextField textField = (TextField) component;
+                        String value = textField.getText().trim();
+                        int key = Integer.parseInt(value);
+
+                        if (!value.isEmpty()) {
+                            if (!numberToTask.containsKey(key)) {
+                                showAlert("No such task found.");
+                                return;
+                            }
+
+                            if (numbers.length() > 0) {
+                                numbers.append(",");
+                            }
+                            numbers.append(value);
+                            Long curId = numberToTask.get(key).getId();
+                            if (ids.length() > 0) ids.append(",");
+                            ids.append(curId);
+                        }
+                        }
+                        break;
+                    }
+                }
+            }
+        this.numbers = numbers.toString();
+        this.ids = ids.toString();
+    }
+
+    /**
+     * Send one record to backend and add to map with the id returned from backend
+     */
     private void addTask() {
         try{
-            int number = 0;
-            if (dependencies != null && dependencies.getText() != null && !dependencies.getText().isEmpty()){
-                number = Integer.parseInt(dependencies.getText());
+            if (task.getText().trim().isEmpty()) {
+                showAlert("Task name cannot be empty.");
+                return;
             }
-            String pre = number == 0? "" : taskMap.get(number).getTask();
+            int weightVal;
+            try{
+                weightVal = Integer.parseInt(weight.getText());
+            }catch(NumberFormatException e){
+                showAlert("Task weight must be a valid integer.");
+                return;
+            }
+            if (weightVal < 1 || weightVal > 10) {
+                showAlert("Task weight must between 1 and 10.");
+            }
+
+            LocalDate dueDateVal = duedate.getValue();
+            if (dueDateVal == null) {
+                showAlert("Please select a due date.");
+                return;
+            }
+
+            int durationVal;
+            try{
+                durationVal = Integer.parseInt(estimatedduration.getText());
+            }catch(NumberFormatException e){
+                showAlert("Eatimated duration must be a valid number.");
+                return;
+            }
+
             Task curTask = new Task(
                     task.getText(),
-                    priority.getText(),
-                    estimatedduration.getText(),
-                    duedate.getText(),
-                    pre
+                    weightVal,
+                    durationVal,
+                    dueDateVal,
+                    ids
             );
-            int taskNumber = taskMap.size() + 1;
-            taskMap.put(taskNumber, curTask);
-            taskDisplayList.add(new TaskDisplay(taskNumber, curTask));
+            // add logic to call backend interface
+            TaskResponse returnedTask = taskService.createTask(curTask);
+            int taskNumber = numberToTask.size() + 1;
+            numberToTask.put(taskNumber, returnedTask);
+            taskDisplayList.add(new TaskDisplay(taskNumber, curTask, numbers));
             showAlert("Task successfully added!");
-
-            // Clear the input fields
-            task.clear();
-            priority.clear();
-            estimatedduration.clear();
-            duedate.clear();
-            dependencies.clear();
 
         } catch (Exception e) {
             showAlert("Failed to submit task: " + e.getMessage());

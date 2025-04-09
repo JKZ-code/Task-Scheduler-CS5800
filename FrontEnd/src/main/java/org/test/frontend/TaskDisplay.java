@@ -3,21 +3,24 @@ package org.test.frontend;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 public class TaskDisplay {
     private final SimpleIntegerProperty number;
-    private final SimpleStringProperty task;
-    private final SimpleStringProperty priority;
-    private final SimpleStringProperty estimatedDuration;
+    private final SimpleStringProperty name;
+    private final SimpleIntegerProperty weight;
+    private final SimpleIntegerProperty estimatedDuration;
     private final SimpleStringProperty dueDate;
     private final SimpleStringProperty dependencies;
 
-    public TaskDisplay(Integer number, Task task) {
+    public TaskDisplay(Integer number, Task task, String dependencyNums) {
         this.number = new SimpleIntegerProperty(number);
-        this.task = new SimpleStringProperty(task.getTask());
-        this.priority = new SimpleStringProperty(task.getPriority());
-        this.estimatedDuration = new SimpleStringProperty(task.getEstimatedDuration());
-        this.dueDate = new SimpleStringProperty(task.getDueDate());
-        this.dependencies = new SimpleStringProperty(task.getDependencies());
+        this.name = new SimpleStringProperty(task.getName());
+        this.weight = new SimpleIntegerProperty(task.getWeight());
+        this.estimatedDuration = new SimpleIntegerProperty(task.getEstimatedDuration());
+        this.dueDate = new SimpleStringProperty(task.getDueDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        this.dependencies = new SimpleStringProperty(dependencyNums);
     }
 
     public int getNumber() {
@@ -28,27 +31,27 @@ public class TaskDisplay {
         return number;
     }
 
-    public String getTask() {
-        return task.get();
+    public String getName() {
+        return name.get();
     }
 
-    public SimpleStringProperty taskProperty() {
-        return task;
+    public SimpleStringProperty nameProperty() {
+        return name;
     }
 
-    public String getPriority() {
-        return priority.get();
+    public int getWeight() {
+        return weight.get();
     }
 
-    public SimpleStringProperty priorityProperty() {
-        return priority;
+    public SimpleIntegerProperty weightProperty() {
+        return weight;
     }
 
-    public String getEstimatedDuration() {
+    public int getEstimatedDuration() {
         return estimatedDuration.get();
     }
 
-    public SimpleStringProperty estimatedDurationProperty() {
+    public SimpleIntegerProperty estimatedDurationProperty() {
         return estimatedDuration;
     }
 
