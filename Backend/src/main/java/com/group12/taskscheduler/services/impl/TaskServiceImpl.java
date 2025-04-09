@@ -106,7 +106,7 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findByNameContainingIgnoreCase(name);
     }
     //endregion
-
+    
     //region Schedule Generation
     @Override
     public Map<String, Object> generateSchedule() {
@@ -114,8 +114,8 @@ public class TaskServiceImpl implements TaskService {
         List<Task> allTasks = taskRepository.findAll();
         System.out.println("Step 1: Found " + allTasks.size() + " tasks");
         
-        // Ensure all dependencies are properly parsed
-        allTasks.forEach(Task::parseDependencies);
+        // // Ensure all dependencies are properly parsed
+        // allTasks.forEach(Task::parseDependencies);
         
         // Step 2: Perform topological sort
         List<Task> topologicallySortedTasks = topologicalSort(allTasks);
@@ -147,11 +147,12 @@ public class TaskServiceImpl implements TaskService {
         
         return result;
     }
-
+    
     /**
      * Calculates the total weight of all tasks in the schedule
      */
-    private int calculateTotalWeight(List<Long> taskIds, List<Task> allTasks) {
+    @Override
+    public int calculateTotalWeight(List<Long> taskIds, List<Task> allTasks) {
         Map<Long, Task> taskMap = allTasks.stream()
                 .collect(Collectors.toMap(Task::getId, task -> task));
         
@@ -186,7 +187,7 @@ public class TaskServiceImpl implements TaskService {
         
         // Calculate in-degrees
         for (Task task : tasks) {
-            for (Long dependencyId : task.getDependencies()) {
+            for (Long dependencyId : task.getDependenciesSet()) {
                 inDegree.put(dependencyId, inDegree.getOrDefault(dependencyId, 0) + 1);
             }
         }
@@ -209,7 +210,7 @@ public class TaskServiceImpl implements TaskService {
             System.out.println("Processing task: " + current.getId());
             
             // Process dependencies
-            for (Long dependencyId : current.getDependencies()) {
+            for (Long dependencyId : current.getDependenciesSet()) {
                 Task dependency = taskMap.get(dependencyId);
                 if (dependency != null) {
                     int newInDegree = inDegree.get(dependencyId) - 1;
@@ -250,7 +251,7 @@ public class TaskServiceImpl implements TaskService {
             int earliestStartTime = 0; // Default start time
             
             // Find the maximum end time of its dependencies
-            for (Long depId : task.getDependencies()) {
+            for (Long depId : task.getDependenciesSet()) {
                 Task dependency = taskMap.get(depId);
                 if (dependency != null) {
                     int dependencyEndTime = dependency.getEarliestStartTime() + dependency.getEstimatedDuration();
@@ -321,7 +322,7 @@ public class TaskServiceImpl implements TaskService {
         List<Task> dependentTasks = new ArrayList<>();
         
         for (Task task : tasks) {
-            if (task.getDependencies().isEmpty()) {
+            if (task.getDependenciesSet().isEmpty()) {
                 independentTasks.add(task);
             } else {
                 dependentTasks.add(task);
@@ -533,7 +534,7 @@ public class TaskServiceImpl implements TaskService {
             Task task = taskMap.get(id);
             if (task == null) continue;
             
-            for (Long depId : task.getDependencies()) {
+            for (Long depId : task.getDependenciesSet()) {
                 if (taskIds.contains(depId)) {
                     // This is a dependency edge: depId -> id
                     graph.get(depId).add(id);
@@ -581,7 +582,7 @@ public class TaskServiceImpl implements TaskService {
         if (task == null) return;
         
         // Process each direct dependency
-        for (Long depId : task.getDependencies()) {
+        for (Long depId : task.getDependenciesSet()) {
             // Skip if already processed to avoid cycles
             if (allDependencies.contains(depId)) continue;
             

@@ -1,13 +1,14 @@
 module org.test.frontend {
     requires javafx.controls;
     requires javafx.fxml;
+    requires javafx.base;
     requires com.fasterxml.jackson.databind;
     requires java.net.http;
     requires com.fasterxml.jackson.datatype.jsr310;
     requires okhttp3;
     requires okio;
 
-
     opens org.test.frontend to javafx.fxml;
+
     exports org.test.frontend;
 }
