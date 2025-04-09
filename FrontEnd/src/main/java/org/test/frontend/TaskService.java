@@ -11,11 +11,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class TaskService {
-    private static final String API_URL = "http://localhost:8081/api/tasks";
+    private static final String API_URL = "http://localhost:8080/api/tasks";
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
-    public TaskService(){
+    public TaskService() {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
@@ -24,7 +24,7 @@ public class TaskService {
 
     public TaskResponse createTask(Task task) throws IOException, InterruptedException {
         String requestBody = objectMapper.writeValueAsString(task);
-        //System.out.println("Request JSON Body:\n" + requestBody);
+        // System.out.println("Request JSON Body:\n" + requestBody);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(API_URL))

@@ -10,7 +10,8 @@ public class TaskResponse {
     private int estimatedDuration;
     private String dependenciesStr;
 
-    public TaskResponse(Long id, String task, int weight, LocalDate dueDate, int estimatedDuration, String dependenciesStr) {
+    public TaskResponse(Long id, String task, int weight, LocalDate dueDate, int estimatedDuration,
+            String dependenciesStr) {
         this.id = id;
         this.name = task;
         this.weight = weight;
@@ -19,7 +20,8 @@ public class TaskResponse {
         this.dependenciesStr = dependenciesStr;
     }
 
-    public TaskResponse() {}
+    public TaskResponse() {
+    }
 
     public Long getId() {
         return id;

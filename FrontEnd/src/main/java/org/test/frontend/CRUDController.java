@@ -74,7 +74,6 @@ public class CRUDController implements Initializable {
     @FXML
     private Button addD;
 
-
     private List<HBox> additionalFields = new ArrayList<>();
     private static final int MAX_FIELDS = 3;
 
@@ -83,13 +82,11 @@ public class CRUDController implements Initializable {
     private Map<Integer, TaskResponse> numberToTask = new HashMap<>();
     private ObservableList<TaskDisplay> taskDisplayList = FXCollections.observableArrayList();
 
-
-
     private TaskService taskService = new TaskService();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        //button to rows for dependencies input
+        // button to rows for dependencies input
         addD.setOnAction(event -> addNewRow());
 
         col_number.setCellValueFactory(new PropertyValueFactory<>("number"));
@@ -100,15 +97,14 @@ public class CRUDController implements Initializable {
         col_dependencies.setCellValueFactory(new PropertyValueFactory<>("dependencies"));
 
         tableView.setItems(taskDisplayList);
-        addBtn.setOnAction(event ->addTask());
+        addBtn.setOnAction(event -> addTask());
 
     }
-
 
     /**
      * Add a new row to input dependencies, maximum dependencies number is 3
      */
-    private void addNewRow(){
+    private void addNewRow() {
         if (multiInputContainer.getChildren().size() < MAX_FIELDS) {
             HBox newRow = createNewRow();
             multiInputContainer.getChildren().add(newRow);
@@ -120,7 +116,7 @@ public class CRUDController implements Initializable {
         }
     }
 
-    private HBox createNewRow(){
+    private HBox createNewRow() {
         HBox row = new HBox(5);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-pref-width: 150; -fx-pref-height: 37;");
@@ -148,9 +144,10 @@ public class CRUDController implements Initializable {
 
     /**
      * the second and third row can be removed
+     * 
      * @param row
      */
-    private void removeRow(HBox row){
+    private void removeRow(HBox row) {
         multiInputContainer.getChildren().remove(row);
         additionalFields.remove(row);
         if (multiInputContainer.getChildren().size() < MAX_FIELDS) {
@@ -163,7 +160,7 @@ public class CRUDController implements Initializable {
      * numbers: String of task no. in current list (separated by ',');
      * ids: String of task id returned from backend (separated by ',')
      */
-    private void getAllValues(){
+    private void getAllValues() {
         StringBuilder numbers = new StringBuilder();
         StringBuilder ids = new StringBuilder();
         for (Node node : multiInputContainer.getChildren()) {
@@ -186,14 +183,15 @@ public class CRUDController implements Initializable {
                             }
                             numbers.append(value);
                             Long curId = numberToTask.get(key).getId();
-                            if (ids.length() > 0) ids.append(",");
+                            if (ids.length() > 0)
+                                ids.append(",");
                             ids.append(curId);
                         }
-                        }
-                        break;
                     }
+                    break;
                 }
             }
+        }
         this.numbers = numbers.toString();
         this.ids = ids.toString();
     }
@@ -203,15 +201,15 @@ public class CRUDController implements Initializable {
      */
     private void addTask() {
         getAllValues();
-        try{
+        try {
             if (task.getText().trim().isEmpty()) {
                 showAlert("Task name cannot be empty.");
                 return;
             }
             int weightVal;
-            try{
+            try {
                 weightVal = Integer.parseInt(weight.getText());
-            }catch(NumberFormatException e){
+            } catch (NumberFormatException e) {
                 showAlert("Task weight must be a valid integer.");
                 return;
             }
@@ -226,25 +224,26 @@ public class CRUDController implements Initializable {
             }
 
             int durationVal;
-            try{
+            try {
                 durationVal = Integer.parseInt(estimatedduration.getText());
-            }catch(NumberFormatException e){
+            } catch (NumberFormatException e) {
                 showAlert("Eatimated duration must be a valid number.");
                 return;
             }
             System.out.println("ids: " + ids);
             System.out.println("numbers: " + numbers);
+            showAlert("bbbb Task successfully added!");
 
             Task curTask = new Task(
                     task.getText(),
                     weightVal,
                     durationVal,
                     dueDateVal,
-                    ids
-            );
-
+                    ids);
+            showAlert("CCC Task successfully added!");
             TaskResponse returnedTask = taskService.createTask(curTask);
-            //TaskResponse returnedTask = taskService2.post(curTask);
+            showAlert("AAAA Task successfully added!");
+            // TaskResponse returnedTask = taskService2.post(curTask);
             int taskNumber = numberToTask.size() + 1;
             numberToTask.put(taskNumber, returnedTask);
             for (int key : numberToTask.keySet()) {
@@ -256,7 +255,7 @@ public class CRUDController implements Initializable {
             taskDisplayList.add(new TaskDisplay(taskNumber, curTask, numbers));
             showAlert("Task successfully added!");
 
-            //clear input form after one submission
+            // clear input form after one submission
             task.clear();
             weight.clear();
             estimatedduration.clear();
