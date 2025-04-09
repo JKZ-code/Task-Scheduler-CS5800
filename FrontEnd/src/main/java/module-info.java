@@ -5,6 +5,7 @@ module org.test.frontend {
     requires java.net.http;
     requires com.fasterxml.jackson.datatype.jsr310;
     requires okhttp3;
+    requires okio;
 
 
     opens org.test.frontend to javafx.fxml;

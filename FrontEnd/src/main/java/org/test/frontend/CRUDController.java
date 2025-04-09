@@ -241,8 +241,8 @@ public class CRUDController implements Initializable {
                     ids
             );
 
-            //TaskResponse returnedTask = taskService.createTask(curTask);
-            TaskResponse returnedTask = taskService2.post(curTask);
+            TaskResponse returnedTask = taskService.createTask(curTask);
+            //TaskResponse returnedTask = taskService2.post(curTask);
             int taskNumber = numberToTask.size() + 1;
             numberToTask.put(taskNumber, returnedTask);
             taskDisplayList.add(new TaskDisplay(taskNumber, curTask, numbers));
