@@ -174,9 +174,9 @@ public class CRUDController implements Initializable {
                     if (component instanceof TextField) {
                         TextField textField = (TextField) component;
                         String value = textField.getText().trim();
-                        int key = Integer.parseInt(value);
 
                         if (!value.isEmpty()) {
+                            int key = Integer.parseInt(value);
                             if (!numberToTask.containsKey(key)) {
                                 showAlert("No such task found.");
                                 return;
@@ -203,6 +203,7 @@ public class CRUDController implements Initializable {
      * Send one record to backend and add to map with the id returned from backend
      */
     private void addTask() {
+        getAllValues();
         try{
             if (task.getText().trim().isEmpty()) {
                 showAlert("Task name cannot be empty.");
@@ -232,6 +233,8 @@ public class CRUDController implements Initializable {
                 showAlert("Eatimated duration must be a valid number.");
                 return;
             }
+            System.out.println("ids: " + ids);
+            System.out.println("numbers: " + numbers);
 
             Task curTask = new Task(
                     task.getText(),
@@ -245,9 +248,16 @@ public class CRUDController implements Initializable {
             //TaskResponse returnedTask = taskService2.post(curTask);
             int taskNumber = numberToTask.size() + 1;
             numberToTask.put(taskNumber, returnedTask);
+            for (int key : numberToTask.keySet()) {
+                System.out.println("key: " + key);
+                TaskResponse cur = numberToTask.get(key);
+                System.out.println("name:" + cur.getName());
+                System.out.println("id " + cur.getId());
+            }
             taskDisplayList.add(new TaskDisplay(taskNumber, curTask, numbers));
             showAlert("Task successfully added!");
 
+            //clear input form after one submission
             task.clear();
             weight.clear();
             estimatedduration.clear();
@@ -258,7 +268,7 @@ public class CRUDController implements Initializable {
             for (int i = 1; i < children.size(); i++) {
                 if (children.get(i) instanceof HBox) {
                     children.remove(i);
-                    i--; // Adjust index after removal
+                    i--;
                 }
             }
 
@@ -268,7 +278,7 @@ public class CRUDController implements Initializable {
                 for (Node node : remainingHBox.getChildren()) {
                     if (node instanceof TextField) {
                         TextField textField = (TextField) node;
-                        textField.clear(); // Clear the text in the TextField
+                        textField.clear();
                     }
                 }
             }
