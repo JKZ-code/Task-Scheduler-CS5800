@@ -60,7 +60,7 @@ public class TaskController {
     public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
         try {
             task.setId(id); // Ensure the ID is set
-            Task updatedTask = taskService.updateTask(task);
+            Task updatedTask = taskService.updateTask(task.getId(), task);
             return ResponseEntity.ok(updatedTask);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -84,13 +84,7 @@ public class TaskController {
     @GetMapping("/schedule")
     public ResponseEntity<Map<String, Object>> generateSchedule() {
         try {
-            List<Long> schedule = taskService.generateSchedule();
-            int totalWeight = taskService.calculateTotalWeight(schedule);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("schedule", schedule);
-            response.put("totalWeight", totalWeight);
-            
+            Map<String, Object> response = taskService.generateSchedule();
             return ResponseEntity.ok(response);
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -108,4 +102,4 @@ public class TaskController {
         error.put("message", ex.getMessage());
         return new ResponseEntity<>(error, ex.getStatusCode());
     }
-} 
+}

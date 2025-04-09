@@ -36,7 +36,7 @@ public interface TaskService {
      * @throws IllegalArgumentException if the task data is invalid
      * @throws RuntimeException if the task doesn't exist
      */
-    Task updateTask(Task task);
+    Task updateTask(Long id, Task task);
 
     /**
      * Deletes a task by ID
@@ -45,19 +45,19 @@ public interface TaskService {
      */
     void deleteTask(Long id);
 
-    /**
-     * Generates an optimal schedule based on all tasks
-     * @return List of task IDs in optimal execution order
-     * @throws IllegalStateException if no valid schedule can be generated
-     */
-    List<Long> generateSchedule();
+    // /**
+    //  * Generates an optimal schedule based on all tasks
+    //  * @return List of task IDs in optimal execution order
+    //  * @throws IllegalStateException if no valid schedule can be generated
+    //  */
+    // List<Long> generateSchedule();
 
     /**
      * Calculates the total weight of tasks in a schedule
      * @param taskIds List of task IDs in the schedule
      * @return Total weight of all tasks in the schedule
      */
-    int calculateTotalWeight(List<Long> taskIds);
+    public int calculateTotalWeight(List<Long> taskIds, List<Task> allTasks);
 
     // Search operations - consolidated into a single method with parameters
     List<Task> searchTasks(String name, Integer weight, LocalDate startDate, LocalDate endDate);
