@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -44,15 +45,21 @@ public class TaskController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable Long id) {
+    @PostMapping("/by-name")
+    public ResponseEntity<Task> getTaskByName(@RequestBody Map<String, String> payload) {
+        String name = payload.get("name");
+        if (name == null || name.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task name is required");
+        }
         try {
-            return taskService.getTaskById(id)
-                    .map(ResponseEntity::ok)
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND, "Task not found with id: " + id));
+            Optional<Task> taskOptional = taskService.getTaskByName(name);
+            if (taskOptional.isPresent()) {
+                return ResponseEntity.ok(taskOptional.get());
+            } else {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found with name: " + name);
+            }
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error retrieving task");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error retrieving task by name");
         }
     }
 
@@ -81,11 +88,20 @@ public class TaskController {
         }
     }
 
-    @GetMapping("/schedule")
-    public ResponseEntity<Map<String, Object>> generateSchedule() {
+    @PostMapping("/schedule")
+    public ResponseEntity<Map<String, Object>> generateSchedule(@RequestBody Map<String, String> payload) {
+        if (payload == null || !payload.containsKey("name") || payload.get("name").trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task name is required");
+        }
+
         try {
-            Map<String, Object> response = taskService.generateSchedule();
-            return ResponseEntity.ok(response);
+            Optional<Task> taskOptional = taskService.getTaskByName(payload.get("name"));
+            if (taskOptional.isPresent()) {
+                Map<String, Object> response = taskService.generateSchedule();
+                return ResponseEntity.ok(response);
+            } else {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found with name: " + payload.get("name"));
+            }
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {

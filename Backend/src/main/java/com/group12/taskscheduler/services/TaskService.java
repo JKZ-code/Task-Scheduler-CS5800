@@ -68,4 +68,11 @@ public interface TaskService {
      * @return A map containing the scheduled tasks and the total weight achieved
      */
     Map<String, Object> generateSchedule();
-} 
+
+    /**
+     * Retrieves a specific task by its name
+     * @param name The name of the task to retrieve
+     * @return Optional containing the task if found, empty otherwise
+     */
+    Optional<Task> getTaskByName(String name);
+}
