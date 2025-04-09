@@ -2,15 +2,21 @@ package org.test.frontend;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
@@ -90,19 +96,29 @@ public class CRUDController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        //button to rows for dependencies input
+        //the button to add rows for dependencies input
         addD.setOnAction(event -> addNewRow());
 
+        // the table to show added tasks
         col_number.setCellValueFactory(new PropertyValueFactory<>("number"));
         col_task.setCellValueFactory(new PropertyValueFactory<>("name"));
         col_priority.setCellValueFactory(new PropertyValueFactory<>("weight"));
         col_estimatedduration.setCellValueFactory(new PropertyValueFactory<>("estimatedDuration"));
         col_duedate.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
         col_dependencies.setCellValueFactory(new PropertyValueFactory<>("dependencies"));
-
         tableView.setItems(taskDisplayList);
+
+        // the button to submit task
         addBtn.setOnAction(event ->addTask());
 
+        // the button to show the sheduled result
+        scheduleBtn.setOnAction(event -> {
+            try{
+                switchToResultPage(event);
+            } catch (IOException e) {
+                showAlert("Failed to show result: " + e.getMessage());
+            }
+        });
     }
 
 
@@ -160,9 +176,9 @@ public class CRUDController implements Initializable {
     }
 
     /**
-     *
-     * numbers: String of task no. in current list (separated by ',');
-     * ids: String of task id returned from backend (separated by ',')
+     * gather dependencies entered by users and save relevant information in Str numbers and ids
+     * numbers: String of task no. in current list (separated by ',') -- help users choose future dependencies
+     * ids: String of task id returned from backend (separated by ',') -- send to backend
      */
     private void getAllValues(){
         StringBuilder numbers = new StringBuilder();
@@ -233,8 +249,8 @@ public class CRUDController implements Initializable {
                 showAlert("Eatimated duration must be a valid number.");
                 return;
             }
-            System.out.println("ids: " + ids);
-            System.out.println("numbers: " + numbers);
+//            System.out.println("ids: " + ids);
+//            System.out.println("numbers: " + numbers);
 
             Task curTask = new Task(
                     task.getText(),
@@ -248,12 +264,12 @@ public class CRUDController implements Initializable {
             //TaskResponse returnedTask = taskService2.post(curTask);
             int taskNumber = numberToTask.size() + 1;
             numberToTask.put(taskNumber, returnedTask);
-            for (int key : numberToTask.keySet()) {
-                System.out.println("key: " + key);
-                TaskResponse cur = numberToTask.get(key);
-                System.out.println("name:" + cur.getName());
-                System.out.println("id " + cur.getId());
-            }
+//            for (int key : numberToTask.keySet()) {
+//                System.out.println("key: " + key);
+//                TaskResponse cur = numberToTask.get(key);
+//                System.out.println("name:" + cur.getName());
+//                System.out.println("id " + cur.getId());
+//            }
             taskDisplayList.add(new TaskDisplay(taskNumber, curTask, numbers));
             showAlert("Task successfully added!");
 
@@ -263,17 +279,13 @@ public class CRUDController implements Initializable {
             estimatedduration.clear();
             duedate.setValue(null);
             ObservableList<Node> children = multiInputContainer.getChildren();
-
-            // Remove all HBoxes except the first one
-            for (int i = 1; i < children.size(); i++) {
+            for (int i = 1; i < children.size(); i++) {// Remove all HBoxes except the first one
                 if (children.get(i) instanceof HBox) {
                     children.remove(i);
                     i--;
                 }
             }
-
-            // Clear the TextField in the first (or remaining) HBox
-            if (!children.isEmpty()) {
+            if (!children.isEmpty()) {// Clear the TextField in the first (or remaining) HBox
                 HBox remainingHBox = (HBox) children.get(0); // Get the first HBox
                 for (Node node : remainingHBox.getChildren()) {
                     if (node instanceof TextField) {
@@ -282,10 +294,19 @@ public class CRUDController implements Initializable {
                     }
                 }
             }
-
         } catch (Exception e) {
             showAlert("Failed to submit task: " + e.getMessage());
         }
+    }
+
+    private void switchToResultPage(ActionEvent event) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/test/frontend/result-display.fxml"));
+        System.out.println(getClass().getResource("/org/test/frontend/result-display.fxml"));
+        Parent root = loader.load();
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        Scene scene = new Scene(root);
+        stage.setScene(scene);
+        stage.show();
     }
 
     private void showAlert(String message) {

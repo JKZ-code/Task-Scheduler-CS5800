@@ -1,0 +1,28 @@
+.label{
+    -fx-background-color: linear-gradient(to bottom right, #f2d7d7, #9e20a0);
+    -fx-text-fill: #fff;
+    -fx-font-family: Arial;
+    -fx-alignment: CENTER;
+    -fx-font-weight: bold;
+    -fx-font-size: 25px;
+}
+
+.white_form{
+    -fx-background-color: #fff;
+}
+
+.other_form{
+    -fx-background-color: linear-gradient(to bottom right, #9e20a0, #5a3375)
+}
+
+.number_text{
+    -fx-border-color: linear-gradient(to bottom right, #9e20a0, #5a3375);
+    -fx-border-radius: 8px;
+    -fx-border-width: 2px;
+}
+
+.task_text{
+    -fx-border-color: linear-gradient(to bottom right, #9e20a0, #5a3375);
+    -fx-border-radius: 8px;
+    -fx-border-width: 2px;
+}

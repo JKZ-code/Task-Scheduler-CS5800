@@ -1,23 +1,27 @@
 package org.test.frontend;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.time.LocalDate;
 import java.util.Set;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TaskResponse {
     private Long id;
     private String name;
     private int weight;
     private LocalDate dueDate;
     private int estimatedDuration;
-    private String dependenciesStr;
+    //private String dependenciesStr;
+    private Set<Long> dependenciesSet;
 
-    public TaskResponse(Long id, String task, int weight, LocalDate dueDate, int estimatedDuration, String dependenciesStr) {
+    public TaskResponse(Long id, String task, int weight, LocalDate dueDate, int estimatedDuration, Set<Long> dependenciesSet) {
         this.id = id;
         this.name = task;
         this.weight = weight;
         this.dueDate = dueDate;
         this.estimatedDuration = estimatedDuration;
-        this.dependenciesStr = dependenciesStr;
+        this.dependenciesSet = dependenciesSet;
     }
 
     public TaskResponse() {}
@@ -42,8 +46,11 @@ public class TaskResponse {
         return estimatedDuration;
     }
 
-    public String getDependenciesStr() {
-        return dependenciesStr;
+//    public String getDependenciesStr() {
+//        return dependenciesStr;
+//    }
+    public Set<Long> getDependenciesSet() {
+        return dependenciesSet;
     }
 
     public void setId(Long id) {
@@ -66,7 +73,10 @@ public class TaskResponse {
         this.estimatedDuration = estimatedDuration;
     }
 
-    public void setDependenciesStr(String dependenciesStr) {
-        this.dependenciesStr = dependenciesStr;
+//    public void setDependenciesStr(String dependenciesStr) {
+//        this.dependenciesStr = dependenciesStr;
+//    }
+    public void setDependenciesSet(Set<Long> dependenciesSet) {
+        this.dependenciesSet = dependenciesSet;
     }
 }
