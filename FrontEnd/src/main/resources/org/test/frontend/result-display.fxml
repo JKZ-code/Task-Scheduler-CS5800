@@ -36,7 +36,7 @@
             </VBox>
             <AnchorPane layoutX="-1.0" layoutY="-3.0" prefHeight="606.0" prefWidth="482.0" styleClass="other_form" stylesheets="@result.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <FontAwesomeIconView fill="#f2d7d7" glyphName="LIST" layoutX="24.0" layoutY="262.0" size="100" />
+                  <FontAwesomeIconView fill="#f2d7d7" glyphName="LIST" layoutX="22.0" layoutY="262.0" size="100" />
                   <Label layoutX="147.0" layoutY="186.0" prefHeight="81.0" prefWidth="289.0" text="Sceduled Tasks" />
                </children>
             </AnchorPane>

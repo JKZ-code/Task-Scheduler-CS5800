@@ -27,22 +27,22 @@ public class CRUDController implements Initializable {
     private Button addBtn;
 
     @FXML
-    private TableColumn<?, ?> col_dependencies;
+    private TableColumn<TaskDisplay, String> col_dependencies;
 
     @FXML
-    private TableColumn<?, ?> col_duedate;
+    private TableColumn<TaskDisplay, String> col_duedate;
 
     @FXML
-    private TableColumn<?, ?> col_estimatedduration;
+    private TableColumn<TaskDisplay, Integer> col_estimatedduration;
 
     @FXML
-    private TableColumn<?, ?> col_number;
+    private TableColumn<TaskDisplay, Integer> col_number;
 
     @FXML
-    private TableColumn<?, ?> col_priority;
+    private TableColumn<TaskDisplay, Integer> col_priority;
 
     @FXML
-    private TableColumn<?, ?> col_task;
+    private TableColumn<TaskDisplay, String> col_task;
 
     @FXML
     private Button deleteBtn;
@@ -89,6 +89,7 @@ public class CRUDController implements Initializable {
     private Map<Integer, TaskResponse> numberToTask = new HashMap<>();
     private ObservableList<TaskDisplay> taskDisplayList = FXCollections.observableArrayList();
 
+    private Integer selectedTaskNumber = null;
 
 
     private TaskService taskService = new TaskService();
@@ -110,6 +111,21 @@ public class CRUDController implements Initializable {
 
         // the button to submit task
         addBtn.setOnAction(event ->addTask());
+
+        // to update a task, first click on the task in the table first
+        tableView.setRowFactory(tv -> {
+            TableRow<TaskDisplay> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (!row.isEmpty() && event.getClickCount() == 2) {
+                    TaskDisplay selected = row.getItem();
+                    handleRowClick(selected);
+                }
+            });
+            return row;
+        });
+
+        // when click update button, update the task content
+        updateBtn.setOnAction(event -> updateTask());
 
         // the button to show the sheduled result
         scheduleBtn.setOnAction(event -> {
@@ -198,12 +214,12 @@ public class CRUDController implements Initializable {
                                 return;
                             }
 
-                            if (numbers.length() > 0) {
+                            if (!numbers.isEmpty()) {
                                 numbers.append(",");
                             }
                             numbers.append(value);
                             Long curId = numberToTask.get(key).getId();
-                            if (ids.length() > 0) ids.append(",");
+                            if (!ids.isEmpty()) ids.append(",");
                             ids.append(curId);
                         }
                         }
@@ -297,6 +313,125 @@ public class CRUDController implements Initializable {
         } catch (Exception e) {
             showAlert("Failed to submit task: " + e.getMessage());
         }
+    }
+
+    private void handleRowClick(TaskDisplay selected) {
+        this.selectedTaskNumber = selected.getNumber();
+        this.task.setText(selected.getName());
+        this.weight.setText(String.valueOf(selected.getWeight()));
+        this.duedate.setValue(LocalDate.parse(selected.getDueDate()));
+        this.estimatedduration.setText(String.valueOf(selected.getEstimatedDuration()));
+        populateDependencies(selected.getDependencies());
+    }
+
+    private void populateDependencies(String dependencies) {
+        multiInputContainer.getChildren().clear();
+
+        if (dependencies == null || dependencies.isEmpty()) {
+            return;
+        }
+
+        String[] deps = dependencies.split(",");
+        firstD.setText(deps[0]);
+        for (int i = 1; i < deps.length; i++) {
+            HBox row = new HBox();
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setStyle("-fx-pref-width: 150; -fx-pref-height: 37;");
+            TextField nextD = new TextField(deps[i].trim());
+            Button removeD = new Button("-");
+            removeD.setStyle("-fx-background-color: linear-gradient(to bottom right, #9e20a0, #5a3375);\n" +
+                    "    -fx-text-fill: #fff;\n" +
+                    "    -fx-font-size: 14px;\n" +
+                    "    -fx-cursor: hand; " +
+                    "   -fx-pref-width: 37;" +
+                    "   -fx-pref-height: 35;");
+            removeD.setOnAction(event -> removeRow(row));
+            row.getChildren().addAll(nextD, removeD);
+            multiInputContainer.getChildren().add(row);
+        }
+    }
+
+    private void updateTask() {
+        if (selectedTaskNumber == null) {
+            showAlert("Please select a task.");
+            return;
+        }
+        getAllValues();
+        try{
+            if (task.getText().trim().isEmpty()) {
+                showAlert("Task name cannot be empty.");
+                return;
+            }
+            int weightVal;
+            try{
+                weightVal = Integer.parseInt(weight.getText());
+            }catch(NumberFormatException e){
+                showAlert("Task weight must be a valid integer.");
+                return;
+            }
+            if (weightVal < 1 || weightVal > 10) {
+                showAlert("Task weight must between 1 and 10.");
+            }
+
+            LocalDate dueDateVal = duedate.getValue();
+            if (dueDateVal == null) {
+                showAlert("Please select a due date.");
+                return;
+            }
+
+            int durationVal;
+            try{
+                durationVal = Integer.parseInt(estimatedduration.getText());
+            }catch(NumberFormatException e){
+                showAlert("Eatimated duration must be a valid number.");
+                return;
+            }
+
+            Task updatedTask = new Task(
+                    task.getText(),
+                    weightVal,
+                    durationVal,
+                    dueDateVal,
+                    ids
+            );
+
+            Long curId = numberToTask.get(selectedTaskNumber).getId();
+            TaskResponse returnedTask = taskService.updateTask(updatedTask, curId);
+            numberToTask.put(selectedTaskNumber, returnedTask);
+            for (int i = 0; i < taskDisplayList.size(); i++) {
+                if (taskDisplayList.get(i).getNumber() == selectedTaskNumber) {
+                    TaskDisplay updatedTaskDisplay = new TaskDisplay(selectedTaskNumber, updatedTask, numbers);
+                    taskDisplayList.set(i, updatedTaskDisplay);
+                    break;
+                }
+            }
+
+            //clear input form after one submission
+            task.clear();
+            weight.clear();
+            estimatedduration.clear();
+            duedate.setValue(null);
+            ObservableList<Node> children = multiInputContainer.getChildren();
+            for (int i = 1; i < children.size(); i++) {// Remove all HBoxes except the first one
+                if (children.get(i) instanceof HBox) {
+                    children.remove(i);
+                    i--;
+                }
+            }
+            if (!children.isEmpty()) {// Clear the TextField in the first (or remaining) HBox
+                HBox remainingHBox = (HBox) children.get(0); // Get the first HBox
+                for (Node node : remainingHBox.getChildren()) {
+                    if (node instanceof TextField) {
+                        TextField textField = (TextField) node;
+                        textField.clear();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            showAlert("Failed to update task: " + e.getMessage());
+        }
+
+        selectedTaskNumber = null;
     }
 
     private void switchToResultPage(ActionEvent event) throws IOException {
