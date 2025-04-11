@@ -31,6 +31,11 @@ public class TaskController {
     @PostMapping
     public ResponseEntity<Task> createTask(@RequestBody Task task) {
         System.out.println("Received task: " + task);
+        System.out.println("  Name: " + task.getName());
+        System.out.println("  Weight: " + task.getWeight());
+        System.out.println("  Due Date: " + task.getDueDate());
+        System.out.println("  Estimated Duration: " + task.getEstimatedDuration());
+        System.out.println("  Dependencies: " + task.getDependenciesSet());
         try {
             if (task.getDependenciesStr() != null && !task.getDependenciesStr().isEmpty()) {
                 Set<Long> parsedDeps = Arrays.stream(task.getDependenciesStr().split(","))
@@ -101,7 +106,7 @@ public class TaskController {
     }
 
     @PostMapping("/schedule")
-    public ResponseEntity<Map<String, Object>> generateSchedule(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<List<Task>> generateSchedule(@RequestBody Map<String, String> payload) {
         if (payload == null || !payload.containsKey("name") || payload.get("name").trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task name is required");
         }
@@ -110,7 +115,9 @@ public class TaskController {
             Optional<Task> taskOptional = taskService.getTaskByName(payload.get("name"));
             if (taskOptional.isPresent()) {
                 Map<String, Object> response = taskService.generateSchedule();
-                return ResponseEntity.ok(response);
+                @SuppressWarnings("unchecked")
+                List<Task> scheduledTasks = (List<Task>) response.get("scheduledTasks");
+                return ResponseEntity.ok(scheduledTasks);
             } else {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found with name: " + payload.get("name"));
             }
