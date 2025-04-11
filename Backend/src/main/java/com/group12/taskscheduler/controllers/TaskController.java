@@ -106,7 +106,7 @@ public class TaskController {
     }
 
     @PostMapping("/schedule")
-    public ResponseEntity<List<Task>> generateSchedule(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<List<String>> generateSchedule(@RequestBody Map<String, String> payload) {
         if (payload == null || !payload.containsKey("name") || payload.get("name").trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task name is required");
         }
@@ -115,9 +115,15 @@ public class TaskController {
             Optional<Task> taskOptional = taskService.getTaskByName(payload.get("name"));
             if (taskOptional.isPresent()) {
                 Map<String, Object> response = taskService.generateSchedule();
+                if (response == null || !response.containsKey("scheduledTasks")) {
+                    throw new IllegalStateException("Scheduled tasks missing from response");
+                }
                 @SuppressWarnings("unchecked")
                 List<Task> scheduledTasks = (List<Task>) response.get("scheduledTasks");
-                return ResponseEntity.ok(scheduledTasks);
+                List<String> taskNames = scheduledTasks.stream()
+                    .map(Task::getName)
+                    .collect(Collectors.toList());
+                return ResponseEntity.ok(taskNames);
             } else {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found with name: " + payload.get("name"));
             }
