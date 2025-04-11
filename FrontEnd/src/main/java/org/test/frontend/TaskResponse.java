@@ -3,7 +3,6 @@ package org.test.frontend;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TaskResponse {
@@ -24,7 +23,8 @@ public class TaskResponse {
         this.dependenciesSet = dependenciesSet;
     }
 
-    public TaskResponse() {}
+    public TaskResponse() {
+    }
 
     public Long getId() {
         return id;

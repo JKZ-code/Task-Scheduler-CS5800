@@ -14,7 +14,7 @@ public class SchedulerService {
      * Checks if any task in the list has dependencies.
      * 
      * @param tasks The list of tasks.
-     * @return true if at least one task has dependencies in its dependenciesSet.
+     * @return true if at least one task has dependencies in its dependenciesSet. 
      */
     public boolean hasDependencies(List<Task> tasks) {
         return tasks.stream()

@@ -3,7 +3,6 @@ package org.test.frontend;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class TaskDisplay {

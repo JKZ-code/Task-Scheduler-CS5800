@@ -1,6 +1,5 @@
 package org.test.frontend;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -12,11 +11,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class TaskService {
-    private static final String API_URL = "http://localhost:8081/api/tasks";
+    private static final String API_URL = "http://localhost:8080/api/tasks";
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
-    public TaskService(){
+    public TaskService() {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
