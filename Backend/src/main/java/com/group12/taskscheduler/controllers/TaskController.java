@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -27,7 +30,16 @@ public class TaskController {
 
     @PostMapping
     public ResponseEntity<Task> createTask(@RequestBody Task task) {
+        System.out.println("Received task: " + task);
         try {
+            if (task.getDependenciesStr() != null && !task.getDependenciesStr().isEmpty()) {
+                Set<Long> parsedDeps = Arrays.stream(task.getDependenciesStr().split(","))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .map(Long::parseLong)
+                        .collect(Collectors.toSet());
+                task.setDependenciesSet(parsedDeps);
+            }
             Task createdTask = taskService.createTask(task);
             return new ResponseEntity<>(createdTask, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {

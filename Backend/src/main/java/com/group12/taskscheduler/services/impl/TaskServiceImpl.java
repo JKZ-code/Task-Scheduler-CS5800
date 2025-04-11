@@ -36,7 +36,13 @@ public class TaskServiceImpl implements TaskService {
         if (task.getDependenciesSet() == null) {
             task.setDependenciesSet(new HashSet<>());
         }
-        System.out.println("aaaaa " + task.getId());
+        System.out.println("Task received in TaskServiceImpl:");
+        System.out.println("  Name: " + task.getName());
+        System.out.println("  Weight: " + task.getWeight());
+        System.out.println("  Due Date: " + task.getDueDate());
+        System.out.println("  Estimated Duration: " + task.getEstimatedDuration());
+        System.out.println("  Dependencies: " + task.getDependenciesSet());
+    
         return taskRepository.save(task);
     }
 
