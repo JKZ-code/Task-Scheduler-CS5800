@@ -428,7 +428,7 @@ public class CRUDController implements Initializable {
     }
 
     private void switchToResultPage(ActionEvent event) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("result-display.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/test/frontend/result-display.fxml"));
         Parent root = loader.load();
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         Scene scene = new Scene(root);
