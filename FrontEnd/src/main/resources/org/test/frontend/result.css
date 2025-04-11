@@ -26,3 +26,12 @@
     -fx-border-radius: 8px;
     -fx-border-width: 2px;
 }
+
+.weight_text{
+    -fx-background-color: #fff;
+    -fx-border-radius: 8px;
+    -fx-border-width: 2px;
+    -fx-font-size: 15px;
+    -fx-font-family: Arial;
+    -fx-font-weight: bold;
+}

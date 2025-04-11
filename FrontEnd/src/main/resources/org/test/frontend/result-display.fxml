@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -13,31 +11,13 @@
    <children>
       <AnchorPane prefHeight="200.0" prefWidth="200.0">
          <children>
-            <VBox fx:id="displayBox" layoutX="483.0" layoutY="3.0" prefHeight="591.0" prefWidth="615.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="483.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-               <children>
-                  <HBox fx:id="displayRow" prefHeight="48.0" prefWidth="617.0">
-                     <children>
-                        <TextField fx:id="firstNumber" prefHeight="48.0" prefWidth="61.0" styleClass="number_text" stylesheets="@result.css">
-                           <HBox.margin>
-                              <Insets left="10.0" />
-                           </HBox.margin>
-                        </TextField>
-                        <TextField fx:id="firstTask" prefHeight="46.0" prefWidth="534.0" styleClass="task_text" stylesheets="@result.css">
-                           <HBox.margin>
-                              <Insets left="10.0" />
-                           </HBox.margin>
-                        </TextField>
-                     </children>
-                     <VBox.margin>
-                        <Insets top="5.0" />
-                     </VBox.margin>
-                  </HBox>
-               </children>
-            </VBox>
+            <VBox fx:id="displayBox" layoutX="483.0" layoutY="3.0" prefHeight="591.0" prefWidth="615.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="483.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
             <AnchorPane layoutX="-1.0" layoutY="-3.0" prefHeight="606.0" prefWidth="482.0" styleClass="other_form" stylesheets="@result.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <FontAwesomeIconView fill="#f2d7d7" glyphName="LIST" layoutX="24.0" layoutY="262.0" size="100" />
+                  <FontAwesomeIconView fill="#f2d7d7" glyphName="LIST" layoutX="22.0" layoutY="262.0" size="100" />
                   <Label layoutX="147.0" layoutY="186.0" prefHeight="81.0" prefWidth="289.0" text="Sceduled Tasks" />
+                  <TextField layoutX="22.0" layoutY="500.0" prefHeight="37.0" prefWidth="187.0" styleClass="weight_text" stylesheets="@result.css" text="Total Weight Realized:" />
+                  <TextField fx:id="weight" layoutX="220.0" layoutY="500.0" prefHeight="37.0" prefWidth="70.0" styleClass="weight_text" stylesheets="@result.css" />
                </children>
             </AnchorPane>
          </children>
