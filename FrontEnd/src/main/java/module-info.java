@@ -6,10 +6,6 @@ module org.test.frontend {
     requires com.fasterxml.jackson.databind;
     requires java.net.http;
     requires com.fasterxml.jackson.datatype.jsr310;
-    requires okhttp3;
-    
-    requires static okio;
-
     opens org.test.frontend to javafx.fxml;
     exports org.test.frontend;
 }

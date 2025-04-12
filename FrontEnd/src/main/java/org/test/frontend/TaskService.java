@@ -1,5 +1,6 @@
 package org.test.frontend;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -9,6 +10,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 
 public class TaskService {
     private static final String API_URL = "http://localhost:8080/api/tasks";
@@ -41,6 +43,19 @@ public class TaskService {
         return objectMapper.readValue(response.body(), TaskResponse.class);
     }
 
+    public List<TaskResponse> getAllTasks() throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL))
+                .header("Content-Type", "application/json")
+                .GET().build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 200) {
+            throw new IOException("Failed to get tasks: " + response.body());
+        }
+
+        return objectMapper.readValue(response.body(), new TypeReference<List<TaskResponse>>() {});
+    }
 
     public TaskResponse updateTask(Task task, Long id) throws IOException, InterruptedException {
         String requestBody = objectMapper.writeValueAsString(task);
@@ -72,19 +87,18 @@ public class TaskService {
         }
     }
 
-    public ScheduleDisplay getSchedule() throws IOException, InterruptedException {
+    public List<String> getSchedule() throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(API_URL + "/schedule"))
                 .header("Content-Type", "application/json")
                 .GET().build();
 
-        System.out.println(request);
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(response);
+        System.out.println(response.body());
         if (response.statusCode() != 200) {
             throw new IOException("Failed to schedule task: " + response.body());
         }
 
-        return objectMapper.readValue(response.body(), ScheduleDisplay.class);
+        return objectMapper.readValue(response.body(), new TypeReference<List<String>>() {});
     }
 }

@@ -13,7 +13,7 @@ public class TaskDisplay {
     private final SimpleStringProperty dueDate;
     private final SimpleStringProperty dependencies;
 
-    public TaskDisplay(Integer number, Task task, String dependencyNums) {
+    public TaskDisplay(Integer number, TaskResponse task, String dependencyNums) {
         this.number = new SimpleIntegerProperty(number);
         this.name = new SimpleStringProperty(task.getName());
         this.weight = new SimpleIntegerProperty(task.getWeight());
