@@ -364,28 +364,25 @@ public class CRUDController implements Initializable {
     private void populateDependencies(String dependencies) {
         multiInputContainer.getChildren().clear();
 
-        if (dependencies == null || dependencies.isEmpty()) {
-            return;
+        if (dependencies != null && !dependencies.isEmpty()) {
+            String[] deps = dependencies.split(",");
+
+            for (int i = 0; i < deps.length; i++) {
+                HBox row = new HBox();
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.setStyle("-fx-pref-width: 150; -fx-pref-height: 37;");
+                TextField nextD = new TextField(deps[i].trim());
+                Button addMoreD = new Button("+");
+                addMoreD.setStyle(BUTTONSTYLE);
+                Button removeD = new Button("-");
+                removeD.setStyle(BUTTONSTYLE);
+                removeD.setOnAction(event -> removeRow(row));
+                row.getChildren().addAll(nextD, addMoreD, removeD);
+                multiInputContainer.getChildren().add(row);
+                addMoreD.setOnAction(event -> addNewRow());
+                updateAddDState();
+            }
         }
-
-        String[] deps = dependencies.split(",");
-
-        for (int i = 0; i < deps.length; i++) {
-            HBox row = new HBox();
-            row.setAlignment(Pos.CENTER_LEFT);
-            row.setStyle("-fx-pref-width: 150; -fx-pref-height: 37;");
-            TextField nextD = new TextField(deps[i].trim());
-            Button addMoreD = new Button("+");
-            addMoreD.setStyle(BUTTONSTYLE);
-            Button removeD = new Button("-");
-            removeD.setStyle(BUTTONSTYLE);
-            removeD.setOnAction(event -> removeRow(row));
-            row.getChildren().addAll(nextD, addMoreD, removeD);
-            multiInputContainer.getChildren().add(row);
-            addMoreD.setOnAction(event -> addNewRow());
-            updateAddDState();
-        }
-
         if (multiInputContainer.getChildren().isEmpty()) {
             HBox row = new HBox();
             row.setAlignment(Pos.CENTER_LEFT);
@@ -424,15 +421,6 @@ public class CRUDController implements Initializable {
 
             // update task saved in our map
             numberToTask.put(selectedTaskNumber, returnedTask);
-
-            // update the task in our tableView
-//            for (int i = 0; i < taskDisplayList.size(); i++) {
-//                if (taskDisplayList.get(i).getNumber() == selectedTaskNumber) {
-//                    TaskDisplay updatedTaskDisplay = new TaskDisplay(selectedTaskNumber, updatedTask, numbers);
-//                    taskDisplayList.set(i, updatedTaskDisplay);
-//                    break;
-//                }
-//            }
             showData();
             clearFields();
         } catch (Exception e) {
@@ -451,26 +439,36 @@ public class CRUDController implements Initializable {
             return;
         }
 
-        try {
-            Long curId = numberToTask.get(selectedTaskNumber).getId();
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("Confirm Delete");
+        confirmation.setHeaderText("Deleting this task will also delete tasks that depend on it.");
+        confirmation.setContentText("Are you sure you want to continue?");
 
-            // delete from backend
-            taskService.deleteTask(curId);
+        ButtonType yesBtn = new ButtonType("Yes", ButtonBar.ButtonData.YES);
+        ButtonType noBtn = new ButtonType("No", ButtonBar.ButtonData.NO);
+        confirmation.getButtonTypes().setAll(yesBtn, noBtn);
 
-            //delete from our map
-            numberToTask.remove(selectedTaskNumber);
-            idToNumber.remove(curId);
+        Optional<ButtonType> result = confirmation.showAndWait();
 
-            //delete from tableView
-//            taskDisplayList.removeIf(task ->
-//                task.getNumber() == selectedTaskNumber
-//            );
-            showData();
-            clearFields();
-        } catch (Exception e) {
-            showAlert("Failed to delete task: " + e.getMessage());
-        }
-        selectedTaskNumber = null;
+        if (result.isPresent() && result.get() == yesBtn) {
+            try {
+                Long curId = numberToTask.get(selectedTaskNumber).getId();
+
+                // delete from backend
+                taskService.deleteTask(curId);
+
+                //delete from our maps
+                numberToTask.remove(selectedTaskNumber);
+                idToNumber.remove(curId);
+                showData();
+                clearFields();
+            } catch (Exception e) {
+                showAlert("Failed to delete task: " + e.getMessage());
+            }
+            selectedTaskNumber = null;
+        } else {
+        showAlert("Deletion cancelled.");
+    }
     }
 
     private void switchToResultPage(ActionEvent event) throws IOException {
