@@ -1,31 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane fx:controller="org.test.frontend.DisplayController"
-             maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-             prefHeight="600.0" prefWidth="1100.0"
-             xmlns="http://javafx.com/javafx/23.0.1"
-             xmlns:fx="http://javafx.com/fxml/1">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.test.frontend.DisplayController">
    <children>
       <AnchorPane prefHeight="200.0" prefWidth="200.0">
          <children>
             <VBox fx:id="displayBox" layoutX="483.0" layoutY="3.0" prefHeight="591.0" prefWidth="615.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="483.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
             <AnchorPane layoutX="-1.0" layoutY="-3.0" prefHeight="606.0" prefWidth="482.0" styleClass="other_form" stylesheets="@result.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <FontAwesomeIconView fill="#f2d7d7" glyphName="LIST" layoutX="22.0" layoutY="262.0" size="100" />
-                  <Label layoutX="147.0" layoutY="186.0" prefHeight="81.0" prefWidth="289.0" text="Scheduled Tasks" />
-                  <TextField layoutX="22.0" layoutY="500.0" prefHeight="37.0" prefWidth="187.0" styleClass="weight_text" stylesheets="@result.css" text="Total Weight Realized:" />
-                  <TextField fx:id="weight" layoutX="220.0" layoutY="500.0" prefHeight="37.0" prefWidth="70.0" styleClass="weight_text" stylesheets="@result.css" />
+                  <Label layoutX="29.0" layoutY="193.0" prefHeight="85.0" prefWidth="424.0" text="Scheduled Tasks" />
                </children>
             </AnchorPane>
          </children>
       </AnchorPane>
    </children>
 </StackPane>
-</file>

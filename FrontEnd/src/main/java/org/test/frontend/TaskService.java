@@ -78,7 +78,9 @@ public class TaskService {
                 .header("Content-Type", "application/json")
                 .GET().build();
 
+        System.out.println(request);
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println(response);
         if (response.statusCode() != 200) {
             throw new IOException("Failed to schedule task: " + response.body());
         }

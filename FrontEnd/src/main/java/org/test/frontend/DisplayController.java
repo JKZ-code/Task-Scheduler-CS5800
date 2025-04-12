@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -18,10 +19,7 @@ public class DisplayController implements Initializable {
     @FXML
     private VBox displayBox;
 
-    @FXML
-    private TextField weight;
-
-    private TaskService taskService;
+    private TaskService taskService = new TaskService();
 
     private static final String HBOXSTYLE = "-fx-pref-width: 617; -fx-pref-height: 46;";
     private static final String NOTEXTSTYLE = "-fx-pref-width: 46; -fx-pref-height: 46; " +
@@ -39,10 +37,10 @@ public class DisplayController implements Initializable {
     }
 
     private void scheduleTask() {
+        System.out.println("function called");
         displayBox.getChildren().clear();
         try{
             ScheduleDisplay schedules = taskService.getSchedule();
-            weight.setText(String.valueOf(schedules.getTotalWeight()));
             List<String> taskNames = schedules.getSchedule();
             if (taskNames == null || taskNames.isEmpty()) {
                 return;

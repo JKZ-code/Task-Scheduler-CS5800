@@ -4,7 +4,6 @@ import java.util.List;
 
 public class ScheduleDisplay {
     private List<String> schedule;
-    private int totalWeight;
 
     public ScheduleDisplay() {
     }
@@ -17,11 +16,5 @@ public class ScheduleDisplay {
         this.schedule = schedule;
     }
 
-    public int getTotalWeight() {
-        return totalWeight;
-    }
 
-    public void setTotalWeight(int totalWeight) {
-        this.totalWeight = totalWeight;
-    }
 }
