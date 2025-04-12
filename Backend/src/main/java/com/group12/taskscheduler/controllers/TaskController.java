@@ -105,33 +105,30 @@ public class TaskController {
         }
     }
 
-    @PostMapping("/schedule")
-    public ResponseEntity<List<String>> generateSchedule(@RequestBody Map<String, String> payload) {
-        if (payload == null || !payload.containsKey("name") || payload.get("name").trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task name is required");
-        }
-
+    @GetMapping("/schedule")
+    public ResponseEntity<List<String>> generateSchedule() {
         try {
-            Optional<Task> taskOptional = taskService.getTaskByName(payload.get("name"));
-            if (taskOptional.isPresent()) {
-                Map<String, Object> response = taskService.generateSchedule();
-                if (response == null || !response.containsKey("scheduledTasks")) {
-                    throw new IllegalStateException("Scheduled tasks missing from response");
-                }
-                @SuppressWarnings("unchecked")
-                List<Task> scheduledTasks = (List<Task>) response.get("scheduledTasks");
-                List<String> taskNames = scheduledTasks.stream()
-                    .map(Task::getName)
-                    .collect(Collectors.toList());
-                return ResponseEntity.ok(taskNames);
-            } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found with name: " + payload.get("name"));
+            Map<String, Object> response = taskService.generateSchedule();
+            if (response == null || !response.containsKey("schedule")) {
+                throw new IllegalStateException("Schedule missing from response");
             }
+            @SuppressWarnings("unchecked")
+            List<Long> scheduledTaskIds = (List<Long>) response.get("schedule");
+            List<Task> scheduledTasks = scheduledTaskIds.stream()
+                .map(id -> taskService.getTaskById(id).orElse(null))
+                .filter(task -> task != null)
+                .collect(Collectors.toList());
+            List<String> taskNames = scheduledTasks.stream()
+                .map(Task::getName)
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(taskNames);
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
+            // Log the exception details
+            e.printStackTrace();
             throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Error generating schedule");
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Error generating schedule: " + e.getMessage());
         }
     }
 

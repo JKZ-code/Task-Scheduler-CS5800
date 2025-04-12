@@ -3,6 +3,7 @@ package com.group12.taskscheduler.services.impl;
 import com.group12.taskscheduler.models.Task;
 import com.group12.taskscheduler.repositories.TaskRepository;
 import com.group12.taskscheduler.services.TaskService;
+import com.group12.taskscheduler.services.SchedulerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +15,12 @@ import java.util.stream.Collectors;
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
+    private final SchedulerService schedulerService;
 
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository) {
+    public TaskServiceImpl(TaskRepository taskRepository, SchedulerService schedulerService) {
         this.taskRepository = taskRepository;
+        this.schedulerService = schedulerService;
     }
 
     // region Basic CRUD Operations
@@ -130,42 +133,58 @@ public class TaskServiceImpl implements TaskService {
     // region Schedule Generation
     @Override
     public Map<String, Object> generateSchedule() {
-        // Step 1: Get all tasks
-        List<Task> allTasks = taskRepository.findAll();
-        System.out.println("Step 1: Found " + allTasks.size() + " tasks");
-
-        // // Ensure all dependencies are properly parsed
-        // allTasks.forEach(Task::parseDependencies);
-
-        // Step 2: Perform topological sort
-        List<Task> topologicallySortedTasks = topologicalSort(allTasks);
-        System.out.println("Step 2: Topological sort produced " + topologicallySortedTasks.size() + " tasks");
-
-        // Step 3: Compute earliest start times
-        List<Task> tasksWithTimes = computeEarliestStartTimes(topologicallySortedTasks);
-        System.out.println("Step 3: Earliest start times computed for " + tasksWithTimes.size() + " tasks");
-
-        // Step 4: Filter out invalid tasks (end time > deadline)
-        List<Task> validTasks = filterValidTasks(tasksWithTimes);
-        System.out.println("Step 4: Filtered to " + validTasks.size() + " valid tasks");
-
-        // Step 5: Apply Weighted Interval Scheduling with DP
-        List<Long> scheduledTasks = weightedIntervalSchedulingDP(validTasks);
-        System.out.println("Step 5: Weighted interval scheduling produced " + scheduledTasks.size() + " tasks");
-
-        // Step 6: Ensure dependencies are included and order by dependencies
-        List<Long> finalSchedule = ensureDependenciesIncluded(scheduledTasks, validTasks);
-        System.out.println("Step 6: Final schedule with dependencies: " + finalSchedule.size() + " tasks");
-
-        // Calculate total weight of scheduled tasks
-        int totalWeight = calculateTotalWeight(finalSchedule, allTasks);
-
-        // Prepare and return the result
-        Map<String, Object> result = new HashMap<>();
-        result.put("schedule", finalSchedule);
-        result.put("totalWeight", totalWeight);
-
-        return result;
+        try {
+            List<Task> allTasks = getAllTasks();
+            System.out.println("Found " + allTasks.size() + " tasks in the database");
+            
+            // If there are no tasks, return an empty schedule
+            if (allTasks.isEmpty()) {
+                System.out.println("No tasks found in the database, returning empty schedule");
+                Map<String, Object> result = new HashMap<>();
+                result.put("schedule", new ArrayList<>());
+                result.put("totalWeight", 0);
+                return result;
+            }
+            
+            // Use the SchedulerService to generate the schedule
+            System.out.println("Using SchedulerService to generate schedule");
+            List<Task> scheduledTasks = schedulerService.scheduleTasks(allTasks);
+            System.out.println("SchedulerService returned " + scheduledTasks.size() + " tasks");
+            
+            // If the scheduler returned an empty list, use a simple sorting approach
+            if (scheduledTasks.isEmpty()) {
+                System.out.println("SchedulerService returned empty list, using simple sorting approach");
+                // Sort tasks by weight (descending) and due date (ascending)
+                scheduledTasks = allTasks.stream()
+                    .sorted(Comparator.comparing(Task::getWeight).reversed()
+                        .thenComparing(Task::getDueDate))
+                    .collect(Collectors.toList());
+                System.out.println("Simple sorting approach returned " + scheduledTasks.size() + " tasks");
+            }
+            
+            // Extract task IDs from the scheduled tasks
+            List<Long> scheduledTaskIds = scheduledTasks.stream()
+                .map(Task::getId)
+                .collect(Collectors.toList());
+            System.out.println("Extracted " + scheduledTaskIds.size() + " task IDs");
+            
+            // Calculate total weight
+            int totalWeight = scheduledTasks.stream()
+                .mapToInt(Task::getWeight)
+                .sum();
+            System.out.println("Total weight: " + totalWeight);
+            
+            // Prepare and return the result
+            Map<String, Object> result = new HashMap<>();
+            result.put("schedule", scheduledTaskIds);
+            result.put("totalWeight", totalWeight);
+            
+            return result;
+        } catch (Exception e) {
+            System.err.println("Error in generateSchedule: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     /**
