@@ -37,11 +37,9 @@ public class DisplayController implements Initializable {
     }
 
     private void scheduleTask() {
-        System.out.println("function called");
         displayBox.getChildren().clear();
         try{
-            ScheduleDisplay schedules = taskService.getSchedule();
-            List<String> taskNames = schedules.getSchedule();
+            List<String> taskNames= taskService.getSchedule();
             if (taskNames == null || taskNames.isEmpty()) {
                 return;
             }
@@ -50,7 +48,7 @@ public class DisplayController implements Initializable {
                 HBox row = new HBox();
                 row.setAlignment(Pos.CENTER_LEFT);
                 row.setStyle(HBOXSTYLE);
-                TextField noField = new TextField(String.valueOf(i));
+                TextField noField = new TextField(String.valueOf(i+1));
                 TextField nameField = new TextField(taskNames.get(i));
                 noField.setStyle(NOTEXTSTYLE);
                 nameField.setStyle(NAMETEXTSTYLE);

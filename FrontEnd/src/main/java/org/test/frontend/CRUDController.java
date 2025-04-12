@@ -78,10 +78,10 @@ public class CRUDController implements Initializable {
     private List<HBox> additionalFields = new ArrayList<>();
     private static final int MAX_FIELDS = 3;
 
-    private String numbers;
     private String ids;
     private Map<Integer, TaskResponse> numberToTask = new HashMap<>();
     private ObservableList<TaskDisplay> taskDisplayList = FXCollections.observableArrayList();
+    private Map<Long, Integer> idToNumber = new HashMap<>();
 
     private Integer selectedTaskNumber = null;
 
@@ -188,10 +188,46 @@ public class CRUDController implements Initializable {
         updateAddDState();
     }
 
+
+    /**
+     * get all saved tasks in backend database
+     */
+    private void fetchDataFromBackend() {
+        try {
+            List<TaskResponse> allTasks = taskService.getAllTasks();
+            List<TaskDisplay> tempList = new ArrayList<>();
+
+            for (TaskResponse curTask : allTasks) {
+                Long curId = curTask.getId();
+                if (!idToNumber.containsKey(curId)) {
+                    showAlert("Task number error, please restart.");
+                }
+                int taskNum = idToNumber.get(curId);
+                Set<Long> dependencies = curTask.getDependenciesSet();
+                StringBuilder sb = new StringBuilder();
+                for (Long depId : dependencies) {
+                    if (!idToNumber.containsKey(depId)) {
+                        continue;
+                    }
+                    if (!sb.isEmpty()) sb.append(",");
+                    sb.append(idToNumber.get(depId));
+                }
+                tempList.add(new TaskDisplay(taskNum, curTask, sb.toString()));
+            }
+
+            tempList.sort(Comparator.comparingInt(TaskDisplay::getNumber));
+            taskDisplayList.clear();
+            taskDisplayList.addAll(tempList);
+        }catch(Exception e){
+            showAlert("Failed to get tasks: " + e.getMessage());
+        }
+    }
+
     /**
      * Show added tasks in our Table View to help users choose dpendencies
      */
     private void showData(){
+        fetchDataFromBackend();
         col_number.setCellValueFactory(new PropertyValueFactory<>("number"));
         col_task.setCellValueFactory(new PropertyValueFactory<>("name"));
         col_priority.setCellValueFactory(new PropertyValueFactory<>("weight"));
@@ -203,11 +239,9 @@ public class CRUDController implements Initializable {
 
     /**
      * gather dependencies entered by users and save relevant information in Str numbers and ids
-     * numbers: String of task no. in current list (separated by ',') -- help users choose future dependencies
      * ids: String of task id returned from backend (separated by ',') -- send to backend
      */
     private void getAllDependencies(){
-        StringBuilder numbers = new StringBuilder();
         StringBuilder ids = new StringBuilder();
         for (Node node : multiInputContainer.getChildren()) {
             if (node instanceof HBox row) {
@@ -221,11 +255,6 @@ public class CRUDController implements Initializable {
                                 showAlert("No such task found.");
                                 return;
                             }
-
-                            if (!numbers.isEmpty()) {
-                                numbers.append(",");
-                            }
-                            numbers.append(value);
                             Long curId = numberToTask.get(key).getId();
                             if (!ids.isEmpty()) ids.append(",");
                             ids.append(curId);
@@ -235,7 +264,6 @@ public class CRUDController implements Initializable {
                     }
                 }
             }
-        this.numbers = numbers.toString();
         this.ids = ids.toString();
     }
 
@@ -304,13 +332,15 @@ public class CRUDController implements Initializable {
             TaskResponse returnedTask = taskService.createTask(curTask);
 
             // for display and future operation purpose, save one more record to a map
-            int taskNumber = numberToTask.size() + 1;
+            int taskNumber = idToNumber.size() + 1;
             numberToTask.put(taskNumber, returnedTask);
+            idToNumber.put(returnedTask.getId(), taskNumber);
 
             //if save successfully to backend, display at our frontend TableView
-            taskDisplayList.add(new TaskDisplay(taskNumber, curTask, numbers));
-            showAlert("Task successfully added!");
+//            taskDisplayList.add(new TaskDisplay(taskNumber, curTask, numbers));
 
+            showAlert("Task successfully added!");
+            showData();
             clearFields();
         } catch (Exception e) {
             showAlert("Failed to submit task: " + e.getMessage());
@@ -328,7 +358,6 @@ public class CRUDController implements Initializable {
         this.weight.setText(String.valueOf(selected.getWeight()));
         this.duedate.setValue(LocalDate.parse(selected.getDueDate()));
         this.estimatedduration.setText(String.valueOf(selected.getEstimatedDuration()));
-        System.out.println(selected.getDependencies());
         populateDependencies(selected.getDependencies());
     }
 
@@ -346,6 +375,22 @@ public class CRUDController implements Initializable {
             row.setAlignment(Pos.CENTER_LEFT);
             row.setStyle("-fx-pref-width: 150; -fx-pref-height: 37;");
             TextField nextD = new TextField(deps[i].trim());
+            Button addMoreD = new Button("+");
+            addMoreD.setStyle(BUTTONSTYLE);
+            Button removeD = new Button("-");
+            removeD.setStyle(BUTTONSTYLE);
+            removeD.setOnAction(event -> removeRow(row));
+            row.getChildren().addAll(nextD, addMoreD, removeD);
+            multiInputContainer.getChildren().add(row);
+            addMoreD.setOnAction(event -> addNewRow());
+            updateAddDState();
+        }
+
+        if (multiInputContainer.getChildren().isEmpty()) {
+            HBox row = new HBox();
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setStyle("-fx-pref-width: 150; -fx-pref-height: 37;");
+            TextField nextD = new TextField();
             Button addMoreD = new Button("+");
             addMoreD.setStyle(BUTTONSTYLE);
             Button removeD = new Button("-");
@@ -381,14 +426,14 @@ public class CRUDController implements Initializable {
             numberToTask.put(selectedTaskNumber, returnedTask);
 
             // update the task in our tableView
-            for (int i = 0; i < taskDisplayList.size(); i++) {
-                if (taskDisplayList.get(i).getNumber() == selectedTaskNumber) {
-                    TaskDisplay updatedTaskDisplay = new TaskDisplay(selectedTaskNumber, updatedTask, numbers);
-                    taskDisplayList.set(i, updatedTaskDisplay);
-                    break;
-                }
-            }
-
+//            for (int i = 0; i < taskDisplayList.size(); i++) {
+//                if (taskDisplayList.get(i).getNumber() == selectedTaskNumber) {
+//                    TaskDisplay updatedTaskDisplay = new TaskDisplay(selectedTaskNumber, updatedTask, numbers);
+//                    taskDisplayList.set(i, updatedTaskDisplay);
+//                    break;
+//                }
+//            }
+            showData();
             clearFields();
         } catch (Exception e) {
             showAlert("Failed to update task: " + e.getMessage());
@@ -414,12 +459,13 @@ public class CRUDController implements Initializable {
 
             //delete from our map
             numberToTask.remove(selectedTaskNumber);
+            idToNumber.remove(curId);
 
             //delete from tableView
-            taskDisplayList.removeIf(task ->
-                task.getNumber() == selectedTaskNumber
-            );
-
+//            taskDisplayList.removeIf(task ->
+//                task.getNumber() == selectedTaskNumber
+//            );
+            showData();
             clearFields();
         } catch (Exception e) {
             showAlert("Failed to delete task: " + e.getMessage());
