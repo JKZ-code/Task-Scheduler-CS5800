@@ -60,6 +60,18 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void deleteTask(Long id) {
+        // First, find all tasks that depend on this task
+        List<Task> allTasks = getAllTasks();
+        List<Task> dependentTasks = allTasks.stream()
+            .filter(task -> task.getDependenciesSet() != null && task.getDependenciesSet().contains(id))
+            .collect(Collectors.toList());
+        
+        // Delete all dependent tasks first (cascading delete)
+        for (Task dependentTask : dependentTasks) {
+            deleteTask(dependentTask.getId());
+        }
+        
+        // Now delete the original task
         taskRepository.deleteById(id);
     }
     // endregion
