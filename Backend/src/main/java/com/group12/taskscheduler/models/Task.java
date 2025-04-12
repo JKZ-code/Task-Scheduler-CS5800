@@ -30,9 +30,15 @@ public class Task {
     private int estimatedDuration;
 
     // Dependencies stored as a comma-separated string of task IDs
-    @Column(name = "dependencies")
     @ElementCollection
+    @CollectionTable(
+        name = "task_dependencies", 
+        joinColumns = @JoinColumn(name = "task_id")
+    )
+    @Column(name = "dependency_id") 
     private Set<Long> dependenciesSet = new HashSet<>();
+
+    private String dependenciesStr; 
 
     // Transient fields used by the algorithm (not persisted)
     @Transient
@@ -124,6 +130,25 @@ public class Task {
 
     public void setValid(boolean valid) {
         this.valid = valid;
+    }
+
+    public String getDependenciesStr() {
+        return dependenciesStr;
+    }
+
+    public void setDependenciesStr(String dependenciesStr) {
+        this.dependenciesStr = dependenciesStr;
+
+        if ((this.dependenciesSet == null || this.dependenciesSet.isEmpty()) 
+            && dependenciesStr != null && !dependenciesStr.isBlank()) {
+            Set<Long> parsedDeps = new HashSet<>();
+            for (String part : dependenciesStr.split(",")) {
+                try {
+                    parsedDeps.add(Long.parseLong(part.trim()));
+                } catch (NumberFormatException ignored) {}
+            }
+            this.dependenciesSet = parsedDeps;
+        }
     }
 
     /**

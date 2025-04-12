@@ -1,43 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.test.frontend.DisplayController">
    <children>
       <AnchorPane prefHeight="200.0" prefWidth="200.0">
          <children>
-            <VBox fx:id="displayBox" layoutX="483.0" layoutY="3.0" prefHeight="591.0" prefWidth="615.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="483.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-               <children>
-                  <HBox fx:id="displayRow" prefHeight="48.0" prefWidth="617.0">
-                     <children>
-                        <TextField fx:id="firstNumber" prefHeight="48.0" prefWidth="61.0" styleClass="number_text" stylesheets="@result.css">
-                           <HBox.margin>
-                              <Insets left="10.0" />
-                           </HBox.margin>
-                        </TextField>
-                        <TextField fx:id="firstTask" prefHeight="46.0" prefWidth="534.0" styleClass="task_text" stylesheets="@result.css">
-                           <HBox.margin>
-                              <Insets left="10.0" />
-                           </HBox.margin>
-                        </TextField>
-                     </children>
-                     <VBox.margin>
-                        <Insets top="5.0" />
-                     </VBox.margin>
-                  </HBox>
-               </children>
-            </VBox>
+            <VBox fx:id="displayBox" layoutX="483.0" layoutY="3.0" prefHeight="591.0" prefWidth="615.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="483.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
             <AnchorPane layoutX="-1.0" layoutY="-3.0" prefHeight="606.0" prefWidth="482.0" styleClass="other_form" stylesheets="@result.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <FontAwesomeIconView fill="#f2d7d7" glyphName="LIST" layoutX="24.0" layoutY="262.0" size="100" />
-                  <Label layoutX="147.0" layoutY="186.0" prefHeight="81.0" prefWidth="289.0" text="Sceduled Tasks" />
+                  <Label layoutX="29.0" layoutY="193.0" prefHeight="85.0" prefWidth="424.0" text="Scheduled Tasks" />
                </children>
             </AnchorPane>
          </children>

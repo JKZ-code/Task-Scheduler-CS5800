@@ -24,7 +24,7 @@ public class TaskService {
 
     public TaskResponse createTask(Task task) throws IOException, InterruptedException {
         String requestBody = objectMapper.writeValueAsString(task);
-        System.out.println("Request JSON Body:\n" + requestBody);
+        // System.out.println("Request JSON Body:\n" + requestBody);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(API_URL))
@@ -42,5 +42,49 @@ public class TaskService {
     }
 
 
+    public TaskResponse updateTask(Task task, Long id) throws IOException, InterruptedException {
+        String requestBody = objectMapper.writeValueAsString(task);
 
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL + "/" + id))
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(requestBody))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new IOException("Failed to update task: " + response.body());
+        }
+
+        return objectMapper.readValue(response.body(), TaskResponse.class);
+    }
+
+    public void deleteTask(Long id) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL + "/" + id))
+                .header("Content-Type", "application/json")
+                .DELETE().build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 204) {
+            throw new IOException("Failed to delete task: " + response.body());
+        }
+    }
+
+    public ScheduleDisplay getSchedule() throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL + "/schedule"))
+                .header("Content-Type", "application/json")
+                .GET().build();
+
+        System.out.println(request);
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println(response);
+        if (response.statusCode() != 200) {
+            throw new IOException("Failed to schedule task: " + response.body());
+        }
+
+        return objectMapper.readValue(response.body(), ScheduleDisplay.class);
+    }
 }
