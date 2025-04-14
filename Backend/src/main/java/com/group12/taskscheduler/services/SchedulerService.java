@@ -40,6 +40,30 @@ public class SchedulerService {
         
         System.out.println("Scheduling " + tasks.size() + " tasks. Test mode: " + testMode);
         
+        // Create a map for easy task lookup
+        Map<Long, Task> taskMap = createTaskMap(tasks);
+        
+        // Check for circular dependencies before scheduling
+        Set<List<Long>> cycles = detectCycles(tasks);
+        if (!cycles.isEmpty()) {
+            System.out.println("WARNING: Circular dependencies detected in tasks!");
+            for (List<Long> cycle : cycles) {
+                System.out.println("Circular dependency: " + 
+                    cycle.stream()
+                        .map(id -> id + " (" + taskMap.get(id).getName() + ")")
+                        .collect(Collectors.joining(" → ")) + 
+                    " → " + cycle.get(0) + " (" + taskMap.get(cycle.get(0)).getName() + ")");
+            }
+            
+            if (!testMode) {
+                System.out.println("Cannot generate a valid schedule with circular dependencies. " +
+                    "Either remove dependencies or run in test mode.");
+                return new ArrayList<>();
+            } else {
+                System.out.println("Continuing in test mode despite circular dependencies.");
+            }
+        }
+        
         // If in test mode, simply schedule all tasks in dependency order
         if (testMode) {
             System.out.println("Test mode ON - scheduling all tasks in dependency order");
@@ -50,9 +74,6 @@ public class SchedulerService {
         if (isSpecificTestCase(tasks)) {
             return handleSpecificTestCase(tasks);
         }
-        
-        // Create a map for easy task lookup
-        Map<Long, Task> taskMap = createTaskMap(tasks);
         
         // Build the dependency graph
         Map<Long, Set<Long>> dependsOn = buildDependencyGraph(tasks); // task -> dependencies
@@ -590,6 +611,27 @@ public class SchedulerService {
             }
         }
         
+        // Detect cycles before sorting
+        Set<List<Long>> cycles = detectCycles(tasks);
+        if (!cycles.isEmpty()) {
+            System.out.println("Breaking cycles for scheduling in test mode:");
+            // Break each cycle by removing one dependency connection
+            for (List<Long> cycle : cycles) {
+                if (cycle.size() >= 2) {
+                    Long source = cycle.get(cycle.size() - 1);
+                    Long target = cycle.get(0);
+                    
+                    System.out.println("Breaking dependency from " + source + " (" + 
+                        taskMap.get(source).getName() + ") to " + target + " (" + 
+                        taskMap.get(target).getName() + ")");
+                    
+                    // Remove the dependency in the graph
+                    graph.get(source).remove(target);
+                    inDegree.put(target, inDegree.get(target) - 1);
+                }
+            }
+        }
+        
         // Topological sort
         List<Task> sortedTasks = new ArrayList<>();
         Queue<Long> queue = new LinkedList<>();
@@ -614,14 +656,19 @@ public class SchedulerService {
             }
         }
         
-        // If not all tasks were sorted (cycle detected), add remaining tasks
+        // If not all tasks were sorted, there might still be cycles or disconnected components
         if (sortedTasks.size() < tasks.size()) {
             Set<Long> sortedIds = sortedTasks.stream()
                 .map(Task::getId)
                 .collect(Collectors.toSet());
-                
+            
+            System.out.println("Not all tasks were included in topological sort. Adding remaining tasks.");
+            
+            // Add remaining tasks - for circular dependencies
             for (Task task : tasks) {
                 if (!sortedIds.contains(task.getId())) {
+                    System.out.println("Adding task outside of topological order: " + 
+                        task.getId() + " (" + task.getName() + ")");
                     sortedTasks.add(task);
                 }
             }
@@ -679,5 +726,65 @@ public class SchedulerService {
         // Calculate total weight
         int totalWeight = schedule.stream().mapToInt(Task::getWeight).sum();
         System.out.println("Total weight: " + totalWeight);
+    }
+    
+    /**
+     * Detect cycles in the dependency graph
+     * @return Set of cycles, where each cycle is a list of task IDs in the cycle
+     */
+    private Set<List<Long>> detectCycles(List<Task> tasks) {
+        Map<Long, Set<Long>> graph = new HashMap<>();
+        Set<List<Long>> cycles = new HashSet<>();
+        
+        // Build dependency graph
+        for (Task task : tasks) {
+            graph.put(task.getId(), new HashSet<>(task.getDependenciesSet()));
+        }
+        
+        // For each node, run DFS to find cycles
+        for (Task task : tasks) {
+            Long startNode = task.getId();
+            Map<Long, Boolean> visited = new HashMap<>();
+            Map<Long, Boolean> recursionStack = new HashMap<>();
+            List<Long> currentPath = new ArrayList<>();
+            
+            findCyclesDFS(startNode, graph, visited, recursionStack, currentPath, cycles);
+        }
+        
+        return cycles;
+    }
+    
+    /**
+     * Helper method for cycle detection using DFS
+     */
+    private void findCyclesDFS(Long currentNode, Map<Long, Set<Long>> graph, 
+                           Map<Long, Boolean> visited, Map<Long, Boolean> recursionStack,
+                           List<Long> currentPath, Set<List<Long>> cycles) {
+        
+        // Mark current node as visited and add to recursion stack
+        visited.put(currentNode, true);
+        recursionStack.put(currentNode, true);
+        currentPath.add(currentNode);
+        
+        // Visit all adjacent vertices
+        for (Long neighbor : graph.getOrDefault(currentNode, new HashSet<>())) {
+            // If not visited, make recursive call
+            if (!Boolean.TRUE.equals(visited.get(neighbor))) {
+                findCyclesDFS(neighbor, graph, visited, recursionStack, currentPath, cycles);
+            } 
+            // If already in recursion stack, we found a cycle
+            else if (Boolean.TRUE.equals(recursionStack.get(neighbor))) {
+                // Find the cycle in the current path
+                int cycleStart = currentPath.indexOf(neighbor);
+                if (cycleStart >= 0) {
+                    List<Long> cycle = new ArrayList<>(currentPath.subList(cycleStart, currentPath.size()));
+                    cycles.add(cycle);
+                }
+            }
+        }
+        
+        // Remove the current node from recursion stack and path
+        recursionStack.put(currentNode, false);
+        currentPath.remove(currentPath.size() - 1);
     }
 }
