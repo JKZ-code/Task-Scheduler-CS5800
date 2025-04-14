@@ -46,7 +46,7 @@
                                     <Font size="15.0" />
                                  </font>
                               </Label>
-                              <Label layoutX="17.0" layoutY="195.0" prefHeight="19.0" prefWidth="201.0" text="Estimated Duration (in hours)">
+                              <Label layoutX="17.0" layoutY="195.0" prefHeight="19.0" prefWidth="201.0" text="Estimated Duration (in days)">
                                  <font>
                                     <Font size="15.0" />
                                  </font>

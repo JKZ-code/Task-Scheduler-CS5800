@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.HashSet;
+import java.lang.Math;
 
 @Entity // Marks this class as a database entity
 @Table(name = "tasks") // Specifies the table name in MySQL
@@ -52,6 +53,9 @@ public class Task {
 
     @Transient
     private Integer deadlineOverride; // Used for testing to override the calculated deadline
+
+    @Transient
+    private int relativeDueDate; // Used for scheduling to store relative due dates
 
     // Constructors
     public Task() {
@@ -152,25 +156,43 @@ public class Task {
     }
 
     /**
-     * Calculates the deadline as hours from now to the due date
-     * This makes it comparable with the task duration (also in hours)
+     * Calculates the deadline as days from now to the due date
+     * This makes it comparable with the task duration (converted to days)
      */
     public int getDeadlineAsInt() {
         // If there's a override value for testing, use it
         if (deadlineOverride != null) {
-            return deadlineOverride;
+            // Convert hours to days (round up to ensure we have enough time)
+            int result = (int) Math.ceil(deadlineOverride / 24.0);
+            System.out.println("Task " + id + " (" + name + "): Using deadline override: " + 
+                deadlineOverride + " hours = " + result + " days");
+            return result;
         }
 
-        // Calculate hours from now to the due date
+        // Calculate days from now to the due date
         if (dueDate == null) {
+            System.out.println("Task " + id + " (" + name + "): No due date, returning MAX_VALUE");
             return Integer.MAX_VALUE; // No deadline
         }
 
         LocalDate today = LocalDate.now();
         long daysBetween = ChronoUnit.DAYS.between(today, dueDate);
+        
+        System.out.println("Task " + id + " (" + name + "): Calculating deadline: today = " + today + 
+            ", dueDate = " + dueDate + ", daysBetween = " + daysBetween);
 
-        // Convert days to hours (24 hours per day)
-        return (int) (daysBetween * 24);
+        // Return days directly (no conversion to hours)
+        return (int) daysBetween;
+    }
+
+    /**
+     * Returns the task duration in days
+     * The estimated duration is already in days so we return it directly
+     */
+    public int getDurationInDays() {
+        // Duration is already in days, return directly
+        System.out.println("Task " + id + " (" + name + "): Getting duration in days: " + estimatedDuration);
+        return estimatedDuration;
     }
 
     /**
@@ -199,6 +221,14 @@ public class Task {
         if (this.dependenciesSet != null) {
             this.dependenciesSet.remove(taskId);
         }
+    }
+
+    public int getRelativeDueDate() {
+        return relativeDueDate;
+    }
+
+    public void setRelativeDueDate(int relativeDueDate) {
+        this.relativeDueDate = relativeDueDate;
     }
 
     // Helper method for the scheduler
