@@ -24,6 +24,9 @@ public class DisplayController implements Initializable {
     @FXML
     private VBox displayBox;
 
+    @FXML
+    private Button backBtn;
+
     private TaskService taskService = new TaskService();
 
     private static final String HBOXSTYLE = "-fx-pref-width: 617; -fx-pref-height: 46;";
@@ -46,6 +49,7 @@ public class DisplayController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         scheduleTask();
+        backBtn.setOnAction(this::switchToCRUDPage);
     }
 
     private void scheduleTask() {

@@ -121,9 +121,6 @@ public class TaskController {
             List<String> taskNames = scheduledTasks.stream()
                 .map(Task::getName)
                 .collect(Collectors.toList());
-            for (int i = 0; i < taskNames.size(); i++) {
-                System.out.println(taskNames);
-            }
             return ResponseEntity.ok(taskNames);
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

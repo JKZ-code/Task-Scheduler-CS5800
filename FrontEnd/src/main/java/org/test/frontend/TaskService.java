@@ -13,7 +13,7 @@ import java.net.http.HttpResponse;
 import java.util.List;
 
 public class TaskService {
-    private static final String API_URL = "http://localhost:8080/api/tasks";
+    private static final String API_URL = "http://localhost:8081/api/tasks";
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
