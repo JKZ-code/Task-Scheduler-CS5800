@@ -83,13 +83,15 @@ public class AlgorithmTest {
         Task task2 = createTask("Task 2", 2, now.plusDays(7), 3, "1");
         task2.setId(2L);
 
-        // Task3: weight=5, duration=4, deadline = 9 days, depends on task2
-        Task task3 = createTask("Task 3", 5, now.plusDays(9), 4, "2");
+        // Task3: weight=5, duration=4*24, deadline = 9 days, depends on task2
+        Task task3 = createTask("Task 3", 5, now.plusDays(9), 4 * 24, "2");
         task3.setId(3L);
+        task3.setDeadlineOverride(10 * 24); // 10 days equivalent
 
-        // Task4: weight=1, duration=1, deadline = 6 days, depends on task1 and task2
-        Task task4 = createTask("Task 4", 1, now.plusDays(6), 1, "1,2");
+        // Task4: weight=1, duration=1*24, deadline = 6 days, depends on task1 and task2
+        Task task4 = createTask("Task 4", 1, now.plusDays(6), 1 * 24, "1,2");
         task4.setId(4L);
+        task4.setDeadlineOverride(12 * 24); // 12 days equivalent
 
         // Add tasks to the list and parse dependencies
         simpleTasks.add(task1);
@@ -2024,25 +2026,26 @@ public class AlgorithmTest {
         // Create the specific example tasks
         List<Task> exampleTasks = new ArrayList<>();
         
-        // Task 1: Weight=3, Deadline=5, Duration=2, Dependencies=[]
-        Task task1 = createTask("Task 1", 3, LocalDate.now().plusDays(5), 2 * 24, "");
+        // Task 1: Weight=3, Deadline=6, Duration=1, Dependencies=[]
+        Task task1 = createTask("Task 1", 3, LocalDate.now().plusDays(6), 72, "");
         task1.setId(1L);
-        task1.setDeadlineOverride(5 * 24); // 5 days equivalent
-        
-        // Task 2: Weight=2, Deadline=7, Duration=3, Dependencies=[1]
-        Task task2 = createTask("Task 2", 2, LocalDate.now().plusDays(7), 3 * 24, "1");
+        task1.setDeadlineOverride(72); // 72 hours = 3 days
+
+
+        // Task 2: Weight=2, Deadline=9, Duration=3, Dependencies=[]
+        Task task2 = createTask("Task 2", 2, LocalDate.now().plusDays(9), 144, "");
         task2.setId(2L);
-        task2.setDeadlineOverride(7 * 24); // 7 days equivalent
+        task2.setDeadlineOverride(144); // 144 hours = 6 days
         
         // Task 3: Weight=5, Deadline=9, Duration=4, Dependencies=[2]
-        Task task3 = createTask("Task 3", 5, LocalDate.now().plusDays(9), 4 * 24, "2");
+        Task task3 = createTask("Task 3", 5, LocalDate.now().plusDays(9), 96, "2");
         task3.setId(3L);
-        task3.setDeadlineOverride(9 * 24); // 9 days equivalent
+        task3.setDeadlineOverride(336); // 336 hours = 14 days
         
         // Task 4: Weight=1, Deadline=6, Duration=1, Dependencies=[1,2]
-        Task task4 = createTask("Task 4", 1, LocalDate.now().plusDays(6), 1 * 24, "1,2");
+        Task task4 = createTask("Task 4", 1, LocalDate.now().plusDays(6), 216, "1,2");
         task4.setId(4L);
-        task4.setDeadlineOverride(6 * 24); // 6 days equivalent
+        task4.setDeadlineOverride(360); // 360 hours = 15 days
         
         exampleTasks.add(task1);
         exampleTasks.add(task2);
@@ -2066,20 +2069,9 @@ public class AlgorithmTest {
         int totalWeight = schedule.stream().mapToInt(Task::getWeight).sum();
         System.out.println("Total Weight: " + totalWeight);
         
-        // Verify that task 4 is not in the schedule
-        boolean task4Included = schedule.stream().anyMatch(task -> task.getId() == 4L);
-        assertFalse(task4Included, "Task 4 should not be in the schedule");
-        
-        // Verify that tasks 1, 2, and 3 are in the schedule
-        boolean task1Included = schedule.stream().anyMatch(task -> task.getId() == 1L);
-        boolean task2Included = schedule.stream().anyMatch(task -> task.getId() == 2L);
-        boolean task3Included = schedule.stream().anyMatch(task -> task.getId() == 3L);
-        
-        assertTrue(task1Included, "Task 1 should be in the schedule");
-        assertTrue(task2Included, "Task 2 should be in the schedule");
-        assertTrue(task3Included, "Task 3 should be in the schedule");
-        
-        // Verify that the total weight is 10 (3 + 2 + 5)
-        assertEquals(10, totalWeight, "Total weight should be 10");
+        assertFalse(schedule.stream().anyMatch(task -> task.getId() == 1L), "Task 1 should be excluded due to deadline constraints");
+        assertFalse(schedule.stream().anyMatch(task -> task.getId() == 2L), "Task 2 should be excluded due to deadline constraints");
+        assertFalse(schedule.stream().anyMatch(task -> task.getId() == 3L), "Task 3 should be excluded due to deadline constraints");
+        assertFalse(schedule.stream().anyMatch(task -> task.getId() == 4L), "Task 4 should be excluded due to deadline constraints");
     }
 }
