@@ -13,7 +13,7 @@ import java.net.http.HttpResponse;
 import java.util.List;
 
 public class TaskService {
-    private static final String API_URL = "http://localhost:8081/api/tasks";
+    private static final String API_URL = "http://localhost:8080/api/tasks";
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
@@ -100,5 +100,17 @@ public class TaskService {
         }
 
         return objectMapper.readValue(response.body(), new TypeReference<List<String>>() {});
+    }
+
+    public void restart() throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL + "/restart"))
+                .header("Content-Type", "application/json")
+                .GET().build();
+
+        HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+        if (response.statusCode() != 204) {
+            throw new IOException("Failed to restart");
+        }
     }
 }

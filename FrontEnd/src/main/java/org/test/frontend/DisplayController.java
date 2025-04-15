@@ -1,18 +1,23 @@
 package org.test.frontend;
 
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TextField;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class DisplayController implements Initializable {
@@ -30,6 +35,13 @@ public class DisplayController implements Initializable {
             "-fx-border-color: linear-gradient(to bottom right, #9e20a0, #5a3375);" +
             "-fx-border-radius: 8px; -fx-border-width: 2px;" +
             "-fx-margin-left: 10px;";
+
+
+    private ActionEvent eventRef;
+
+    public void setEvent(ActionEvent event) {
+        this.eventRef = event;
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -56,17 +68,49 @@ public class DisplayController implements Initializable {
                 displayBox.getChildren().add(row);
             }
         }catch(Exception e){
-            showAlert("Failed to schedule: " + e.getMessage());
+            showDecisionAlert("Failed to schedule: " + e.getMessage(), eventRef);
         }
 
     }
 
-    private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Information");
+//    private void showAlert(String message) {
+//        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+//        alert.setTitle("Information");
+//        alert.setHeaderText(null);
+//        alert.setContentText(message);
+//        alert.showAndWait();
+//    }
+
+    private void showDecisionAlert(String message, ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Scheduling Failed");
         alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        alert.setContentText(message + "\n\nDo you want to update your tasks?");
+
+        ButtonType yesButton = new ButtonType("Yes");
+        ButtonType noButton = new ButtonType("No");
+
+        alert.getButtonTypes().setAll(yesButton, noButton);
+
+        Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.isPresent() && result.get() == yesButton) {
+            switchToCRUDPage(event);
+        } else {
+            Platform.exit();
+        }
     }
 
+    private void switchToCRUDPage(ActionEvent event){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/test/frontend/task-crud.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Task Editor");
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
