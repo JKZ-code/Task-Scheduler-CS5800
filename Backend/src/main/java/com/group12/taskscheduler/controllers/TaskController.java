@@ -2,10 +2,7 @@ package com.group12.taskscheduler.controllers;
 
 import com.group12.taskscheduler.models.Task;
 import com.group12.taskscheduler.services.TaskService;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
