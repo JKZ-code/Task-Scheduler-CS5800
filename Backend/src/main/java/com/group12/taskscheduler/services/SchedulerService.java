@@ -6,6 +6,15 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Custom exception for circular dependencies
+ */
+class CircularDependencyException extends RuntimeException {
+    public CircularDependencyException(String message) {
+        super(message);
+    }
+}
+
 @Service
 public class SchedulerService {
     
@@ -94,21 +103,10 @@ public class SchedulerService {
         // Check for circular dependencies before scheduling
         Set<List<Long>> cycles = detectCycles(tasks);
         if (!cycles.isEmpty()) {
-            System.out.println("WARNING: Circular dependencies detected in tasks!");
-            for (List<Long> cycle : cycles) {
-                System.out.println("Circular dependency: " + 
-                    cycle.stream()
-                        .map(id -> id + " (" + taskMap.get(id).getName() + ")")
-                        .collect(Collectors.joining(" → ")) + 
-                    " → " + cycle.get(0) + " (" + taskMap.get(cycle.get(0)).getName() + ")");
-            }
-            
             if (!testMode) {
-                System.out.println("Cannot generate a valid schedule with circular dependencies. " +
-                    "Either remove dependencies or run in test mode.");
-                return new ArrayList<>();
+                throw new CircularDependencyException("Circular dependencies detected");
             } else {
-                System.out.println("Continuing in test mode despite circular dependencies.");
+                System.out.println("WARNING: Circular dependencies detected. Continuing in test mode.");
             }
         }
         
