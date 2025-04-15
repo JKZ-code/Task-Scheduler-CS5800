@@ -101,4 +101,16 @@ public class TaskService {
 
         return objectMapper.readValue(response.body(), new TypeReference<List<String>>() {});
     }
+
+    public void restart() throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL + "/restart"))
+                .header("Content-Type", "application/json")
+                .GET().build();
+
+        HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+        if (response.statusCode() != 204) {
+            throw new IOException("Failed to restart");
+        }
+    }
 }

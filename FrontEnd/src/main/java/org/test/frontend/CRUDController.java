@@ -79,9 +79,10 @@ public class CRUDController implements Initializable {
     private static final int MAX_FIELDS = 3;
 
     private String ids;
-    private Map<Integer, TaskResponse> numberToTask = new HashMap<>();
+    private Map<Integer, TaskResponse> numberToTask = TaskState.getInstance().getNumberToTask();
     private ObservableList<TaskDisplay> taskDisplayList = FXCollections.observableArrayList();
-    private Map<Long, Integer> idToNumber = new HashMap<>();
+    private Map<Long, Integer> idToNumber = TaskState.getInstance().getIdToNumber();
+
 
     private Integer selectedTaskNumber = null;
 
@@ -333,11 +334,10 @@ public class CRUDController implements Initializable {
 
             // for display and future operation purpose, save one more record to a map
             int taskNumber = idToNumber.size() + 1;
-            numberToTask.put(taskNumber, returnedTask);
-            idToNumber.put(returnedTask.getId(), taskNumber);
-
-            //if save successfully to backend, display at our frontend TableView
-//            taskDisplayList.add(new TaskDisplay(taskNumber, curTask, numbers));
+//            numberToTask.put(taskNumber, returnedTask);
+            TaskState.getInstance().addToNumberToTask(taskNumber, returnedTask);
+//            idToNumber.put(returnedTask.getId(), taskNumber);
+            TaskState.getInstance().addToIdToNumber(returnedTask.getId(), taskNumber);
 
             showAlert("Task successfully added!");
             showData();
@@ -420,7 +420,8 @@ public class CRUDController implements Initializable {
             TaskResponse returnedTask = taskService.updateTask(updatedTask, curId);
 
             // update task saved in our map
-            numberToTask.put(selectedTaskNumber, returnedTask);
+//            numberToTask.put(selectedTaskNumber, returnedTask);
+            TaskState.getInstance().addToNumberToTask(selectedTaskNumber, returnedTask);
             showData();
             clearFields();
         } catch (Exception e) {
@@ -474,8 +475,10 @@ public class CRUDController implements Initializable {
     private void switchToResultPage(ActionEvent event) throws IOException {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/test/frontend/result-display.fxml"));
-            System.out.println(getClass().getResource("/org/test/frontend/result-display.fxml"));
+            //System.out.println(getClass().getResource("/org/test/frontend/result-display.fxml"));
             Parent root = loader.load();
+            DisplayController controller = loader.getController();
+            controller.setEvent(event);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
             stage.setScene(scene);
